@@ -5,7 +5,7 @@
     "url": "https://github.com/joshghent"
   },
   "metadata": {
-    "description": "Product engineering skills for Claude Code: ship marketing content, audit repos, and keep dependencies safe.",
+    "description": "Product engineering skills for Claude Code: ship marketing content, review design, audit repos, and keep dependencies safe.",
     "pluginRoot": "./plugins"
   },
   "plugins": [
@@ -13,6 +13,11 @@
       "name": "blogger",
       "source": "./plugins/blogger",
       "description": "Turn shipped commits into dated blog posts, changelog entries, and social snippets in your site's own voice."
+    },
+    {
+      "name": "design-review",
+      "source": "./plugins/design-review",
+      "description": "Review a UI for conversion, UI/UX, accessibility, performance, and SEO against Apple, FT, and OpenAI design standards — and strip AI design slop."
     },
     {
       "name": "sentinel",

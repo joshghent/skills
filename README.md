@@ -1,8 +1,9 @@
 # Product Skills
 
-A Claude Code plugin marketplace for product engineering work. Three small,
-focused plugins: write marketing content from your commits, audit a repo for
-risk, and keep dependencies patched. Each one ships a slash command and a
+A Claude Code plugin marketplace for product engineering work. Four small,
+focused plugins: write marketing content from your commits, review a UI's
+design, audit a repo for risk, and keep dependencies patched. Each one ships a
+slash command and a
 [skill](https://docs.claude.com/en/docs/claude-code/skills), so you can trigger
 it directly or let Claude reach for it when a request matches.
 
@@ -13,6 +14,7 @@ Add the marketplace once, then install the plugins you want:
 ```sh
 /plugin marketplace add joshghent/skills
 /plugin install blogger@product-skills
+/plugin install design-review@product-skills
 /plugin install sentinel@product-skills
 /plugin install warden@product-skills
 ```
@@ -28,6 +30,7 @@ Update later with:
 | Plugin | Command | What it does |
 |--------|---------|--------------|
 | `blogger` | `/blogger` | Turns shipped commits into dated blog posts, changelog entries, and social snippets in your site's voice. |
+| `design-review` | `/design-review` | Reviews a UI for conversion, UI/UX, accessibility, performance, and SEO against Apple/FT/OpenAI standards, and flags AI design slop. |
 | `sentinel` | `/sentinel` | Audits the whole repo for quality, coverage, CI, security, and AI-agent fragility, ranked by production risk. |
 | `warden` | `/warden` | Patches security alerts and bumps dependencies safely, verified by your own build and tests, in one clean PR. |
 
@@ -41,6 +44,29 @@ dependency bumps, and "AI wrote a thing" filler with no user-facing value.
 ```sh
 /blogger last 20 commits
 /blogger since v1.2.0
+```
+
+## design-review
+
+A senior product-designer's critique of a UI, not a generic best-practice
+lecture. Point it at a live URL, a running dev server, or a component, and it
+reviews the real rendered experience: it walks the primary user flow, checks
+1440 / 768 / 375px viewports, exercises interaction and keyboard states, and
+measures Core Web Vitals and contrast where it can drive a browser.
+
+It judges the work against the houses that set the bar — Apple (clarity,
+hierarchy, the 8pt grid), the Financial Times (serif headline + sans data,
+trust through restraint), and OpenAI/ChatGPT (whitespace as the bold move, one
+dominant control) — weighs conversion heavily (value prop, single primary CTA,
+form friction, trust signals), and calls out AI design slop by name: the indigo
+gradient, the generic hero plus three feature cards, emoji headings, no real
+type scale. Findings come back ranked by impact, ending with the single
+highest-leverage change.
+
+```sh
+/design-review http://localhost:3000
+/design-review the pricing page
+/design-review src/components/Hero.tsx
 ```
 
 ## sentinel
@@ -97,4 +123,5 @@ plugins/
 
 To add a plugin: create `plugins/<name>/` with those three files and add an
 entry to `plugins[]` in `marketplace.json`. Keep the plugin name, command name,
-and skill name the same single word so the dev UX stays predictable.
+and skill name identical (a single word where it reads well) so the dev UX
+stays predictable.
