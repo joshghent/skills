@@ -29,3 +29,9 @@ It inspects real code, commit history, and site voice before writing, and skips 
 Whole-repository quality, coverage, CI, security, and AI-agent fragility review — a senior-engineer audit rather than a line-by-line style review. Useful for pre-launch hardening, checking whether an AI-built repo is safe to keep extending, finding test/coverage gaps, and spotting duplicated concepts, dead code, and silent fallbacks.
 
 It is evidence-based: it runs the available build/test/typecheck/lint commands where possible, then ranks findings by production and maintenance risk into a remediation plan.
+
+### `repo-warden`
+
+Automated dependency and security maintenance — the work people hate, handed back as one clean PR. Patches Dependabot/advisory alerts (security first), bumps outdated packages safely, and verifies every change with the project's own build and tests before opening a single well-summarised pull request.
+
+Distilled from the RepoJanitor/RepoWarden production maintainer: detects the package manager from the lockfile, derives security fix versions from the affected range (not just GHSA's often-empty `first_patched_version`), prefers lockfile-only overrides/resolutions for transitive vulns, isolates breaking major bumps, and records what it skipped and why.
