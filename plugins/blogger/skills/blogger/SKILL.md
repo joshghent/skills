@@ -1,9 +1,9 @@
 ---
-name: feature-blogger
+name: blogger
 description: Analyse recent commits, identify user-facing product features, and create dated markdown blog posts in the same voice as the existing site.
 ---
 
-# Feature Blogger
+# Blogger
 
 Use this skill when the user wants to turn recent product work into markdown blog posts, changelog-style content, SEO pages, launch notes, or social-ready feature announcements.
 
@@ -535,7 +535,7 @@ A bad output:
 ## Example Prompt
 
 ```text
-Use the feature-blogger skill.
+Use the blogger skill.
 
 Analyse the latest 20 commits. Identify user-facing features or meaningful product improvements. Create dated markdown blog post drafts in the same style as the existing site posts. Also give me LinkedIn, X, and build-in-public snippets for each post. Do not invent features. If a change is not blog-worthy, skip it and explain why.
 ```

@@ -1,0 +1,8 @@
+{
+  "name": "blogger",
+  "version": "1.0.0",
+  "description": "Turn shipped commits into dated blog posts, changelog entries, and social snippets in your site's own voice.",
+  "author": {
+    "name": "Josh Ghent"
+  }
+}

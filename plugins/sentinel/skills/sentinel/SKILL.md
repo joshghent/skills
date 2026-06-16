@@ -1,9 +1,9 @@
 ---
-name: repo-sentinel
+name: sentinel
 description: Whole-codebase quality, coverage, CI, and AI-agent fragility review for products built or maintained by AI agents.
 ---
 
-# Repo Sentinel: Whole-Codebase Quality & Coverage Review
+# Sentinel: Whole-Codebase Quality and Coverage Review
 
 Use this skill when the user wants a reusable, high-signal audit of an entire repository, especially one that is built, run, or maintained by AI agents.
 
@@ -437,7 +437,7 @@ Give a practical remediation plan in phases.
 Use this exact output structure.
 
 ```markdown
-# Repo Sentinel Review
+# Sentinel Review
 
 ## Executive Summary
 

@@ -1,0 +1,8 @@
+{
+  "name": "warden",
+  "version": "1.0.0",
+  "description": "Patch security alerts and bump dependencies safely, verified by your own build and tests, in one clean PR.",
+  "author": {
+    "name": "Josh Ghent"
+  }
+}

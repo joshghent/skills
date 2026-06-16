@@ -1,0 +1,28 @@
+{
+  "name": "product-skills",
+  "owner": {
+    "name": "Josh Ghent",
+    "url": "https://github.com/joshghent"
+  },
+  "metadata": {
+    "description": "Product engineering skills for Claude Code: ship marketing content, audit repos, and keep dependencies safe.",
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "blogger",
+      "source": "./plugins/blogger",
+      "description": "Turn shipped commits into dated blog posts, changelog entries, and social snippets in your site's own voice."
+    },
+    {
+      "name": "sentinel",
+      "source": "./plugins/sentinel",
+      "description": "Whole-repo quality, coverage, CI, security, and AI-agent fragility audit, ranked by production risk."
+    },
+    {
+      "name": "warden",
+      "source": "./plugins/warden",
+      "description": "Patch security alerts and bump dependencies safely, verified by your own build and tests, in one clean PR."
+    }
+  ]
+}
