@@ -5,14 +5,14 @@
     "url": "https://github.com/joshghent"
   },
   "metadata": {
-    "description": "Product engineering skills for Claude Code: ship marketing content, review design, audit repos, and keep dependencies safe.",
+    "description": "Product engineering skills for Claude Code: ship marketing content, review design, audit repos, keep dependencies safe, and turn plans into Gantarr timelines.",
     "pluginRoot": "./plugins"
   },
   "plugins": [
     {
       "name": "product-skills",
       "source": "./plugins/product-skills",
-      "description": "Four product engineering skills in one plugin: blogger (commits → marketing content), design-review (UI critique), sentinel (repo risk audit), and warden (safe dependency patching)."
+      "description": "Five product engineering skills in one plugin: blogger (commits → marketing content), design-review (UI critique), sentinel (repo risk audit), warden (safe dependency patching), and gantarr (plan → importable Gantt timeline)."
     }
   ]
 }

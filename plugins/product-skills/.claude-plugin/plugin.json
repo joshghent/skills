@@ -1,7 +1,7 @@
 {
   "name": "product-skills",
   "version": "1.0.0",
-  "description": "Product engineering skills for Claude Code: write marketing content from your commits, review a UI's design, audit a repo for risk, and keep dependencies patched.",
+  "description": "Product engineering skills for Claude Code: write marketing content from your commits, review a UI's design, audit a repo for risk, keep dependencies patched, and turn a plan into an importable Gantarr timeline.",
   "author": {
     "name": "Josh Ghent"
   }

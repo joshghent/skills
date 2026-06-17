@@ -1,11 +1,12 @@
 # Product Skills
 
 A Claude Code plugin marketplace for product engineering work. One plugin,
-`product-skills`, bundling four small, focused
+`product-skills`, bundling five small, focused
 [skills](https://docs.claude.com/en/docs/claude-code/skills): write marketing
-content from your commits, review a UI's design, audit a repo for risk, and keep
-dependencies patched. Each ships a slash command, so you can trigger it directly
-or let Claude reach for it when a request matches.
+content from your commits, review a UI's design, audit a repo for risk, keep
+dependencies patched, and turn a plan into an importable Gantt timeline. Each
+ships a slash command, so you can trigger it directly or let Claude reach for it
+when a request matches.
 
 ## Install
 
@@ -33,6 +34,7 @@ All four skills ship in the single `product-skills` plugin. Update later with:
 | `design-review` | `/design-review` | Reviews a UI for conversion, UI/UX, accessibility, performance, and SEO against Apple/FT/OpenAI standards, and flags AI design slop. |
 | `sentinel` | `/sentinel` | Audits the whole repo for quality, coverage, CI, security, and AI-agent fragility, ranked by production risk. |
 | `warden` | `/warden` | Patches security alerts and bumps dependencies safely, verified by your own build and tests, in one clean PR. |
+| `gantarr` | `/gantarr` | Turns a plan, roadmap, or conversation into a valid `GanttProject` JSON file you can import at [gantarr.joshghent.com](https://gantarr.joshghent.com) to render a timeline. |
 
 ## blogger
 
@@ -95,6 +97,25 @@ build and tests before opening a PR. It records what it skipped and why.
 ```sh
 /warden
 /warden analysis only
+```
+
+## gantarr
+
+A plan turned into a timeline you can actually show off. Point it at a roadmap,
+a phased delivery plan, or just the work discussed in the conversation, and it
+emits a complete `.gantarr.json` file matching
+[Gantarr's](https://gantarr.joshghent.com) `GanttProject` schema — phases become
+workstreams, tasks become dated bars, work types become a colour legend, and
+"X blocks Y" becomes dependency arrows.
+
+Gantarr imports the file verbatim with no validation, so the skill is strict
+about it: every reference resolves, every date parses (`YYYY-MM-DD`, inclusive),
+and it runs a validation pass before handing the file over. Then you load it in
+the app's toolbar and the chart renders immediately.
+
+```sh
+/gantarr the plan above, starting next Monday
+/gantarr roadmap.md
 ```
 
 ## Manual install
