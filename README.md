@@ -1,25 +1,25 @@
 # Product Skills
 
-A Claude Code plugin marketplace for product engineering work. Four small,
-focused plugins: write marketing content from your commits, review a UI's
-design, audit a repo for risk, and keep dependencies patched. Each one ships a
-slash command and a
-[skill](https://docs.claude.com/en/docs/claude-code/skills), so you can trigger
-it directly or let Claude reach for it when a request matches.
+A Claude Code plugin marketplace for product engineering work. One plugin,
+`product-skills`, bundling four small, focused
+[skills](https://docs.claude.com/en/docs/claude-code/skills): write marketing
+content from your commits, review a UI's design, audit a repo for risk, and keep
+dependencies patched. Each ships a slash command, so you can trigger it directly
+or let Claude reach for it when a request matches.
 
 ## Install
 
-Add the marketplace once, then install the plugins you want:
+Two commands — add the marketplace, then install the plugin:
 
 ```sh
+# Add marketplace
 /plugin marketplace add joshghent/skills
-/plugin install blogger@product-skills
-/plugin install design-review@product-skills
-/plugin install sentinel@product-skills
-/plugin install warden@product-skills
+
+# Install plugin
+/plugin install product-skills@product-skills
 ```
 
-Update later with:
+All four skills ship in the single `product-skills` plugin. Update later with:
 
 ```sh
 /plugin marketplace update product-skills
@@ -27,8 +27,8 @@ Update later with:
 
 ## What's inside
 
-| Plugin | Command | What it does |
-|--------|---------|--------------|
+| Skill | Command | What it does |
+|-------|---------|--------------|
 | `blogger` | `/blogger` | Turns shipped commits into dated blog posts, changelog entries, and social snippets in your site's voice. |
 | `design-review` | `/design-review` | Reviews a UI for conversion, UI/UX, accessibility, performance, and SEO against Apple/FT/OpenAI standards, and flags AI design slop. |
 | `sentinel` | `/sentinel` | Audits the whole repo for quality, coverage, CI, security, and AI-agent fragility, ranked by production risk. |
@@ -104,24 +104,24 @@ Claude Code picks it up and invokes it when a request matches its description.
 
 ```sh
 # Project-level (one repo)
-cp -r plugins/warden/skills/warden /path/to/your-repo/.claude/skills/
+cp -r plugins/product-skills/skills/warden /path/to/your-repo/.claude/skills/
 
 # User-level (everywhere)
-cp -r plugins/warden/skills/warden ~/.claude/skills/
+cp -r plugins/product-skills/skills/warden ~/.claude/skills/
 ```
 
 ## Repo layout
 
 ```
-.claude-plugin/marketplace.json   # the marketplace manifest
+.claude-plugin/marketplace.json          # the marketplace manifest
 plugins/
-  <plugin>/
-    .claude-plugin/plugin.json     # plugin metadata
-    commands/<plugin>.md           # the /<plugin> slash command
-    skills/<plugin>/SKILL.md       # the skill's full process
+  product-skills/
+    .claude-plugin/plugin.json           # plugin metadata
+    commands/<skill>.md                  # one /<skill> slash command per skill
+    skills/<skill>/SKILL.md              # each skill's full process
 ```
 
-To add a plugin: create `plugins/<name>/` with those three files and add an
-entry to `plugins[]` in `marketplace.json`. Keep the plugin name, command name,
-and skill name identical (a single word where it reads well) so the dev UX
-stays predictable.
+Everything ships in the one `product-skills` plugin so install stays two
+commands. To add a skill: drop `commands/<name>.md` and `skills/<name>/SKILL.md`
+into `plugins/product-skills/`. Keep the command name and skill name identical
+(a single word where it reads well) so the dev UX stays predictable.

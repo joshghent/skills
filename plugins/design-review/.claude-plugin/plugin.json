@@ -1,8 +1,0 @@
-{
-  "name": "design-review",
-  "version": "1.0.0",
-  "description": "Critique a UI for conversion, UI/UX, accessibility, performance, and SEO against Apple, FT, and OpenAI design standards — and strip AI design slop.",
-  "author": {
-    "name": "Josh Ghent"
-  }
-}

@@ -1,8 +1,0 @@
-{
-  "name": "sentinel",
-  "version": "1.0.0",
-  "description": "Whole-repo quality, coverage, CI, security, and AI-agent fragility audit, ranked by production risk.",
-  "author": {
-    "name": "Josh Ghent"
-  }
-}

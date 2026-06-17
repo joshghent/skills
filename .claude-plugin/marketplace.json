@@ -10,24 +10,9 @@
   },
   "plugins": [
     {
-      "name": "blogger",
-      "source": "./plugins/blogger",
-      "description": "Turn shipped commits into dated blog posts, changelog entries, and social snippets in your site's own voice."
-    },
-    {
-      "name": "design-review",
-      "source": "./plugins/design-review",
-      "description": "Review a UI for conversion, UI/UX, accessibility, performance, and SEO against Apple, FT, and OpenAI design standards — and strip AI design slop."
-    },
-    {
-      "name": "sentinel",
-      "source": "./plugins/sentinel",
-      "description": "Whole-repo quality, coverage, CI, security, and AI-agent fragility audit, ranked by production risk."
-    },
-    {
-      "name": "warden",
-      "source": "./plugins/warden",
-      "description": "Patch security alerts and bump dependencies safely, verified by your own build and tests, in one clean PR."
+      "name": "product-skills",
+      "source": "./plugins/product-skills",
+      "description": "Four product engineering skills in one plugin: blogger (commits → marketing content), design-review (UI critique), sentinel (repo risk audit), and warden (safe dependency patching)."
     }
   ]
 }
