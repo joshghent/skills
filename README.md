@@ -20,7 +20,7 @@ Two commands — add the marketplace, then install the plugin:
 /plugin install product-skills@product-skills
 ```
 
-All four skills ship in the single `product-skills` plugin. Update later with:
+All five skills ship in the single `product-skills` plugin. Update later with:
 
 ```sh
 /plugin marketplace update product-skills

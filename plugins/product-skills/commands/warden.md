@@ -1,6 +1,6 @@
 ---
 description: Patch security alerts and bump dependencies safely, then open one clean PR.
-argument-hint: [optional: "analysis only" to skip opening a PR]
+argument-hint: [optional "analysis only" to skip opening a PR]
 ---
 
 Use the `warden` skill to do a dependency and security sweep on this repo.
