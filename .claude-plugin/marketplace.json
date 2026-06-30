@@ -5,8 +5,7 @@
     "url": "https://github.com/joshghent"
   },
   "metadata": {
-    "description": "Product engineering skills for Claude Code: ship marketing content, review design, audit repos, keep dependencies safe, and turn plans into Gantarr timelines.",
-    "pluginRoot": "./plugins"
+    "description": "Product engineering skills for Claude Code: ship marketing content, review design, audit repos, keep dependencies safe, and turn plans into Gantarr timelines."
   },
   "plugins": [
     {

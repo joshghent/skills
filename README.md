@@ -10,17 +10,23 @@ when a request matches.
 
 ## Install
 
-Two commands — add the marketplace, then install the plugin:
+One command. Claude Code fetches the marketplace straight from this repo and
+installs the plugin in a single step:
 
 ```sh
-# Add marketplace
-/plugin marketplace add joshghent/skills
+/plugin install product-skills@joshghent/skills
+```
 
-# Install plugin
+That's it — all five skills and their slash commands are available immediately.
+
+Prefer to do it explicitly? The same install in two steps:
+
+```sh
+/plugin marketplace add joshghent/skills
 /plugin install product-skills@product-skills
 ```
 
-All four skills ship in the single `product-skills` plugin. Update later with:
+All five skills ship in the single `product-skills` plugin. Update later with:
 
 ```sh
 /plugin marketplace update product-skills
@@ -142,7 +148,7 @@ plugins/
     skills/<skill>/SKILL.md              # each skill's full process
 ```
 
-Everything ships in the one `product-skills` plugin so install stays two
-commands. To add a skill: drop `commands/<name>.md` and `skills/<name>/SKILL.md`
+Everything ships in the one `product-skills` plugin so install stays a single
+command. To add a skill: drop `commands/<name>.md` and `skills/<name>/SKILL.md`
 into `plugins/product-skills/`. Keep the command name and skill name identical
 (a single word where it reads well) so the dev UX stays predictable.
