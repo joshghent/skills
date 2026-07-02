@@ -8,8 +8,10 @@ Use the `warden` skill to do a dependency and security sweep on this repo.
 Mode: $ARGUMENTS
 
 Follow the skill end to end: set up isolation first, detect the package manager
-from the lockfile, fix known vulnerabilities before routine bumps, verify every
-change with the project's own build and tests, and isolate breaking major bumps.
-Open one clean, well-summarised PR with the security, updates, and skipped
-tables. If "analysis only" is requested, produce the same tables and commands
-without opening a PR.
+from the lockfile, pull recent production error signals (Sentry, New Relic,
+Cloudflare Workers, Vercel, Supabase, etc.) read-only to prioritise by real
+impact, fix known vulnerabilities before routine bumps, verify every change with
+the project's own build and tests, and isolate breaking major bumps. Open one
+clean, well-summarised PR with the production-errors, security, updates, and
+skipped tables. If "analysis only" is requested, produce the same tables and
+commands without opening a PR.

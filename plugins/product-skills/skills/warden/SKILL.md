@@ -1,6 +1,6 @@
 ---
 name: warden
-description: Automated dependency and security maintenance for a repo. Patches Dependabot/advisory alerts (security first), bumps outdated deps safely, upgrades end-of-life runtimes to the current LTS using endoflife.date, verifies with the project's own build and tests, and opens one clean, well-summarised PR. Use when asked to patch vulnerabilities, clear Dependabot alerts, update dependencies, upgrade an end-of-life runtime, or do routine dependency maintenance.
+description: Automated dependency and security maintenance for a repo. Pulls live production error signals (Sentry, New Relic, Cloudflare Workers, Vercel, Supabase, Datadog) to prioritise by real impact, patches Dependabot/advisory alerts (security first), bumps outdated deps safely, upgrades end-of-life runtimes to the current LTS using endoflife.date, verifies with the project's own build and tests, and opens one clean, well-summarised PR. Use when asked to patch vulnerabilities, clear Dependabot alerts, update dependencies, upgrade an end-of-life runtime, check what's breaking in production, or do routine dependency maintenance.
 ---
 
 # Warden: Dependency and Security Maintenance
@@ -14,10 +14,11 @@ doesn't push any real fix is not success.
 
 ## Operating principle
 
-Act like a careful maintainer doing a weekly sweep. Security updates first,
-then end-of-life runtimes, then safe version bumps. Every change is verified by
-the project's own build and tests before it goes in a PR. Never weaken or bypass
-tests to make an upgrade look green. When in doubt, leave a dep alone and say why.
+Act like a careful maintainer doing a weekly sweep. Check what's actually
+breaking in production first, then security updates, then end-of-life runtimes,
+then safe version bumps. Every change is verified by the project's own build and
+tests before it goes in a PR. Never weaken or bypass tests to make an upgrade
+look green. When in doubt, leave a dep alone and say why.
 
 ## 0. Set up isolation first
 
@@ -72,6 +73,75 @@ gh api repos/{owner}/{repo}/dependabot/alerts --paginate \
 Also fold in the package manager's own audit output and `outdated` listing
 (`npm outdated`, `pnpm outdated`, etc.) for non-security bumps.
 
+## 3. Pull production error signals
+
+An audit tells you what *could* be wrong; production tells you what *is* wrong.
+Before ranking the work, pull recent errors and logs from wherever the app runs
+so the sweep is driven by real impact, not just advisory noise. This does two
+jobs:
+
+- **Prioritise.** A dependency that appears in a live production stack trace or
+  is throwing errors for real users jumps to the top of the queue, ahead of a
+  low-severity advisory on a package no request path touches.
+- **Baseline.** Capture the current error rate and the top recurring errors so
+  the PR can state what production looked like *before* the sweep — and so a
+  post-deploy check can confirm the change didn't make it worse.
+
+This is a **read-only** step. Pull logs and error summaries; never mutate
+production, rotate keys, or change alerting. If no credentials are configured,
+say so and continue with the audit-only signal rather than blocking.
+
+### Detect the observability stack
+
+Find which platforms the app reports to, the same way you detect the package
+manager — from what's in the repo, never guess:
+
+```bash
+grep -RniE 'sentry|newrelic|new_relic|datadog|dd-trace|honeycomb|grafana|logtail|axiom' \
+  package.json .env.example *.js *.ts 2>/dev/null | head        # SDKs / DSNs
+ls sentry.*.config.* newrelic.js datadog* 2>/dev/null            # SDK config files
+grep -RniE 'observability|logpush|\[observability\]' wrangler.toml wrangler.jsonc 2>/dev/null  # CF Workers
+ls vercel.json .vercel 2>/dev/null && echo "vercel"              # Vercel runtime logs
+grep -RniE 'supabase' package.json 2>/dev/null | head           # Supabase logs/advisors
+```
+
+Credentials for these live in the environment, not the repo. Read them from the
+shell / linked `.env` (`SENTRY_AUTH_TOKEN`, `NEW_RELIC_API_KEY`,
+`CLOUDFLARE_API_TOKEN`, `DATADOG_API_KEY`, …); never print a token's value.
+
+### Pull recent errors per platform
+
+Query the last **7–14 days** and pull the top recurring errors by frequency,
+not a raw firehose. Concrete entry points per platform:
+
+| Platform | How to pull recent errors (read-only) |
+|----------|----------------------------------------|
+| **Sentry** | REST API: `curl -s -H "Authorization: Bearer $SENTRY_AUTH_TOKEN" "https://sentry.io/api/0/projects/{org}/{project}/issues/?query=is:unresolved&statsPeriod=14d&sort=freq"` — take title, culprit, count, first/last seen. Or `sentry-cli issues list`. If a Sentry MCP is connected, use it. |
+| **New Relic** | NerdGraph NRQL over the errors table: `POST https://api.newrelic.com/graphql` with header `API-Key: $NEW_RELIC_API_KEY`, body a NRQL query like `SELECT count(*) FROM TransactionError SINCE 7 days ago FACET error.class, error.message LIMIT 20`. |
+| **Cloudflare Workers** | Live tail: `npx wrangler tail <worker> --format json --status error` (sample a window). Historical: the Workers Observability logs query, or `wrangler deployments list` for what's deployed. If the Cloudflare MCP is connected, use `workers_list` / worker fetch tools. |
+| **Vercel** | If the Vercel MCP is connected, `get_runtime_errors` and `get_runtime_logs` for the project. Otherwise `vercel logs <deployment> --json`. |
+| **Supabase** | If the Supabase MCP is connected, `get_logs` (per service) and `get_advisors` (security/performance) for the project. |
+| **Datadog / Grafana / CloudWatch / Axiom** | Query their logs/errors API for the same window (Datadog Events/Logs API, Loki `query_range`, CloudWatch Logs Insights, Axiom APL). Take the top error signatures. |
+
+### Turn signals into priorities
+
+For each recurring production error, decide whether the sweep can act on it:
+
+- **Error traces into a dependency you're about to touch** (a stack frame in
+  `node_modules/<pkg>`, a known bug fixed in a newer release, a deprecation
+  warning from an EoL runtime) → **raise that package's priority** and, in the
+  fix notes, link the error to the version that resolves it.
+- **Error is in application code, not a dependency** → out of scope for warden;
+  don't try to fix app logic here. Record it under "Production errors observed"
+  so the human sees it, and move on.
+- **A dependency the audit flags shows zero production impact** → still fix
+  security issues (unexploited ≠ safe), but you can de-prioritise cosmetic bumps
+  on quiet packages.
+
+Record the top production errors and the baseline error rate — they go in the
+PR (below) so the change ships with production context, not just a green
+checkmark.
+
 ### Critical gotcha: deriving the fix version
 
 GHSA's `first_patched_version` is **often empty**. Do not drop a vuln just
@@ -112,7 +182,7 @@ these rules to every one you write:
   `npm update` (they bump everything indiscriminately); target the specific
   package only. yarn v1 resolutions use `"**/package": "version"` syntax.
 
-## 3. Upgrade end-of-life runtimes and software
+## 4. Upgrade end-of-life runtimes and software
 
 An end-of-life (EoL) runtime stops receiving security patches, so a repo pinned
 to one is a standing vulnerability even when every package is current. Treat EoL
@@ -181,7 +251,7 @@ tests, or app fail on the new runtime, do not ship the bump. Record it as
 blocked with the error and leave the runtime on its current cycle if that cycle
 is still supported.
 
-## 4. Plan the changes safely
+## 5. Plan the changes safely
 
 - **Group sensibly.** One PR for the sweep, but batch by risk: security patches
   and patch/minor bumps together; isolate any major-version bump (likely
@@ -193,7 +263,7 @@ is still supported.
 - **Don't fight the pins.** If `.mise.toml`/engines or a peer-dep constraint
   blocks an upgrade, respect it and report it rather than forcing it.
 
-## 5. Apply and verify every change
+## 6. Apply and verify every change
 
 For each batch:
 
@@ -220,7 +290,7 @@ Rules:
   test fails, confirm it isn't already failing on the base branch before blaming
   your change.
 
-## 6. Open one clean PR
+## 7. Open one clean PR
 
 Commit per logical batch, push the branch, and open a PR with `gh pr create`.
 Use a precise title and a description with these sections:
@@ -243,6 +313,14 @@ One line: what this sweep does (e.g. "Patch 3 security alerts + 6 routine bumps"
 |------------------|-----------|----------------------------------|
 | node | 20 → 24 | 2028-04 |
 
+## Production errors observed
+Top recurring errors from prod (Sentry/New Relic/Workers/…) over the last N days,
+and whether this sweep addresses them.
+| Error | Source | Count | Addressed by |
+|-------|--------|-------|--------------|
+| TypeError in undici stream | Sentry | 412 | undici 5.28.2 → 5.28.4 |
+| (app-code error, out of scope) | Sentry | 88 | flagged for the team |
+
 ## Risk summary
 - What could break and why (e.g. major bumps, behaviour changes), and what was
   verified (build ✓, tests ✓, audit clean ✓).
@@ -256,12 +334,15 @@ Never reference Claude or AI in the commit messages or PR body.
 
 ## Output when not opening a PR
 
-If the user only wants analysis (not a PR), produce the same three tables
-(**Security fixes**, **Dependency updates**, **Skipped/blocked**) plus a short
-risk summary and the exact commands to apply them.
+If the user only wants analysis (not a PR), produce the same tables
+(**Production errors observed**, **Security fixes**, **Dependency updates**,
+**Skipped/blocked**) plus a short risk summary and the exact commands to apply
+them.
 
 ## Hard rules
 
+- Check production error signals (Sentry/New Relic/Cloudflare Workers/…) first,
+  read-only, and let real impact drive priority; never mutate production.
 - Security before cosmetics; a no-op "fix" is a failure.
 - Detect the package manager from the lockfile; use only that one.
 - Verify with the project's own build/tests; never fake green.
