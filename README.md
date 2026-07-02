@@ -1,32 +1,47 @@
 # Product Skills
 
 A Claude Code plugin marketplace for product engineering work. One plugin,
-`product-skills`, bundling five small, focused
+`product-skills`, bundling seven small, focused
 [skills](https://docs.claude.com/en/docs/claude-code/skills): write marketing
 content from your commits, review a UI's design, audit a repo for risk, keep
-dependencies patched, and turn a plan into an importable Gantt timeline. Each
-ships a slash command, so you can trigger it directly or let Claude reach for it
-when a request matches.
+dependencies patched (driven by real production errors), review a site's search
+and AI-answer visibility, merge the PR queue and ship it live, and turn a plan
+into an importable Gantt timeline. Each ships a slash command, so you can trigger
+it directly or let Claude reach for it when a request matches.
 
 ## Install
 
-One command. Claude Code fetches the marketplace straight from this repo and
-installs the plugin in a single step:
+Two commands, run inside Claude Code. First add the marketplace (by GitHub
+repo), then install the plugin from it:
+
+```sh
+# 1. Add the marketplace — this is where you use the repo slug
+/plugin marketplace add joshghent/skills
+
+# 2. Install the plugin from that marketplace
+/plugin install product-skills@product-skills
+```
+
+Then `/reload-plugins` (or restart Claude Code) to activate it.
+
+**Read the install line as `plugin@marketplace`.** The part after `@` is the
+**marketplace name** — which this repo names `product-skills` — *not* the GitHub
+repo. So it's `product-skills@product-skills`, not
+`product-skills@joshghent/skills`. The repo slug (`joshghent/skills`) is only
+used in step 1, when adding the marketplace.
+
+On recent Claude Code you can collapse both steps into one, which adds the
+marketplace and installs in a single command:
 
 ```sh
 /plugin install product-skills@joshghent/skills
 ```
 
-That's it — all five skills and their slash commands are available immediately.
+If that errors with `Marketplace "joshghent/skills" not found`, your version
+doesn't support the shorthand — use the two-step form above.
 
-Prefer to do it explicitly? The same install in two steps:
-
-```sh
-/plugin marketplace add joshghent/skills
-/plugin install product-skills@product-skills
-```
-
-All five skills ship in the single `product-skills` plugin. Update later with:
+Every skill ships in the single `product-skills` plugin, so install stays at
+most two commands. Update later with:
 
 ```sh
 /plugin marketplace update product-skills
@@ -39,7 +54,9 @@ All five skills ship in the single `product-skills` plugin. Update later with:
 | `blogger` | `/blogger` | Turns shipped commits into dated blog posts, changelog entries, and social snippets in your site's voice. |
 | `design-review` | `/design-review` | Reviews a UI for conversion, UI/UX, accessibility, performance, and SEO against Apple/FT/OpenAI standards, and flags AI design slop. |
 | `sentinel` | `/sentinel` | Audits the whole repo for quality, coverage, CI, security, and AI-agent fragility, ranked by production risk. |
-| `warden` | `/warden` | Patches security alerts and bumps dependencies safely, verified by your own build and tests, in one clean PR. |
+| `warden` | `/warden` | Pulls production errors (Sentry, New Relic, Cloudflare Workers…), then patches security alerts and bumps dependencies safely, verified by your own build and tests, in one clean PR. |
+| `beacon` | `/beacon` | Reviews a site's SEO and GEO (AI-answer) visibility from GSC, Ahrefs, and PostHog data, then optimises pages, metadata, and structured data. |
+| `conductor` | `/conductor` | Merges all ready open PRs in reverse chronological order, each verified green, then confirms CI ships the apps live. |
 | `gantarr` | `/gantarr` | Turns a plan, roadmap, or conversation into a valid `GanttProject` JSON file you can import at [gantarr.joshghent.com](https://gantarr.joshghent.com) to render a timeline. |
 
 ## blogger
@@ -95,14 +112,69 @@ can, then ranks findings by production and maintenance risk into a fix plan.
 ## warden
 
 The dependency maintenance people put off, handed back as one reviewable PR. It
-detects the package manager from the lockfile, fixes known vulnerabilities
+first pulls recent production errors and logs (Sentry, New Relic, Cloudflare
+Workers, Vercel, Supabase, Datadog — read-only) so real impact drives priority,
+then detects the package manager from the lockfile, fixes known vulnerabilities
 before routine bumps, prefers lockfile-only overrides for transitive issues,
 isolates breaking major bumps, and verifies every change with the project's own
-build and tests before opening a PR. It records what it skipped and why.
+build and tests before opening a PR. The PR ships with a production-errors
+baseline, and it records what it skipped and why.
 
 ```sh
 /warden
 /warden analysis only
+```
+
+## beacon
+
+Search and AI-answer visibility, driven by your real data instead of generic
+best-practice lectures. It pulls Google Search Console (via Ahrefs), Ahrefs Site
+Explorer / Site Audit / Keywords Explorer, Ahrefs Brand Radar (AI-answer
+citations and share of voice), and PostHog behaviour, then reviews two
+disciplines at once:
+
+- **SEO** — technical health and indexation, striking-distance keywords (page-2
+  rankings a nudge from page 1), high-impression / low-CTR titles, content gaps
+  vs competitors, decaying pages, internal linking, and backlinks to reclaim.
+- **GEO** (Generative Engine Optimization) — whether ChatGPT, Perplexity, and
+  Google AI Overviews can find, trust, and *cite* your pages: answer-first
+  structure, question-shaped headings, extractable facts, entity clarity,
+  schema.org, and whether AI crawlers (`GPTBot`, `PerplexityBot`, `ClaudeBot`,
+  `Google-Extended`) are even allowed in `robots.txt`.
+
+Findings come back ranked by traffic and revenue impact, each tied to the query,
+page, or metric behind it. Ask it to optimise and it applies the fixes —
+metadata through the framework's real mechanism, structured data that matches
+the page, answer-first content edits in your voice — never anything that risks a
+penalty.
+
+```sh
+/beacon example.com
+/beacon the /pricing page
+/beacon
+```
+
+## conductor
+
+The release manager for a PR backlog. It enumerates the open pull requests,
+keeps only the ones that are genuinely ready (not draft, mergeable, required
+checks green, approvals satisfied, no `do-not-merge` signal), and merges them in
+reverse chronological order — one at a time, updating each branch against the
+base and waiting for CI green before merging, then re-checking the rest after
+every merge so the train self-heals as `main` moves. Anything that conflicts or
+fails is skipped and recorded, never forced; it never uses `--admin` or bypasses
+branch protection.
+
+Then it makes sure the code actually shipped: it finds the deploy pipeline
+(GitHub Actions, Cloudflare Workers/Pages, Vercel…), watches the post-merge
+deploy run, and smoke-checks the live app (200 + version match). If there's no
+deploy step or it didn't trigger, it flags the gap and offers to trigger or wire
+up the deploy. It confirms the plan before the first merge, since merging and
+deploying are hard to reverse.
+
+```sh
+/conductor
+/conductor dry run
 ```
 
 ## gantarr
@@ -148,7 +220,7 @@ plugins/
     skills/<skill>/SKILL.md              # each skill's full process
 ```
 
-Everything ships in the one `product-skills` plugin so install stays a single
-command. To add a skill: drop `commands/<name>.md` and `skills/<name>/SKILL.md`
+Everything ships in the one `product-skills` plugin so install stays short (one
+or two commands). To add a skill: drop `commands/<name>.md` and `skills/<name>/SKILL.md`
 into `plugins/product-skills/`. Keep the command name and skill name identical
 (a single word where it reads well) so the dev UX stays predictable.
