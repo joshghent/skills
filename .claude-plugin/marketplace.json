@@ -1,5 +1,5 @@
 {
-  "name": "product-skills",
+  "name": "joshghent-skills",
   "owner": {
     "name": "Josh Ghent",
     "url": "https://github.com/joshghent"
@@ -9,8 +9,13 @@
   },
   "plugins": [
     {
-      "name": "product-skills",
-      "source": "./plugins/product-skills",
+      "name": "joshghent-skills",
+      "source": "./plugins/joshghent-skills",
+      "category": "development",
+      "author": {
+        "name": "Josh Ghent"
+      },
+      "homepage": "https://github.com/joshghent/skills",
       "description": "Seven product engineering skills in one plugin: blogger (commits → marketing content), design-review (UI critique), sentinel (repo risk audit), warden (production-error-driven dependency patching), beacon (SEO + GEO / AI-answer visibility), conductor (merge the PR queue and ship it live), and gantarr (plan → importable Gantt timeline)."
     }
   ]

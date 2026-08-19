@@ -1,7 +1,7 @@
 # Product Skills
 
 A Claude Code plugin marketplace for product engineering work. One plugin,
-`product-skills`, bundling seven small, focused
+`joshghent-skills`, bundling seven small, focused
 [skills](https://docs.claude.com/en/docs/claude-code/skills): write marketing
 content from your commits, review a UI's design, audit a repo for risk, keep
 dependencies patched (driven by real production errors), review a site's search
@@ -19,32 +19,32 @@ repo), then install the plugin from it:
 /plugin marketplace add joshghent/skills
 
 # 2. Install the plugin from that marketplace
-/plugin install product-skills@product-skills
+/plugin install joshghent-skills@joshghent-skills
 ```
 
 Then `/reload-plugins` (or restart Claude Code) to activate it.
 
 **Read the install line as `plugin@marketplace`.** The part after `@` is the
-**marketplace name** — which this repo names `product-skills` — *not* the GitHub
-repo. So it's `product-skills@product-skills`, not
-`product-skills@joshghent/skills`. The repo slug (`joshghent/skills`) is only
+**marketplace name** — which this repo names `joshghent-skills` — *not* the
+GitHub repo. So it's `joshghent-skills@joshghent-skills`, not
+`joshghent-skills@joshghent/skills`. The repo slug (`joshghent/skills`) is only
 used in step 1, when adding the marketplace.
 
 On recent Claude Code you can collapse both steps into one, which adds the
 marketplace and installs in a single command:
 
 ```sh
-/plugin install product-skills@joshghent/skills
+/plugin install joshghent-skills@joshghent/skills
 ```
 
 If that errors with `Marketplace "joshghent/skills" not found`, your version
 doesn't support the shorthand — use the two-step form above.
 
-Every skill ships in the single `product-skills` plugin, so install stays at
+Every skill ships in the single `joshghent-skills` plugin, so install stays at
 most two commands. Update later with:
 
 ```sh
-/plugin marketplace update product-skills
+/plugin marketplace update joshghent-skills
 ```
 
 ## What's inside
@@ -203,10 +203,10 @@ Claude Code picks it up and invokes it when a request matches its description.
 
 ```sh
 # Project-level (one repo)
-cp -r plugins/product-skills/skills/warden /path/to/your-repo/.claude/skills/
+cp -r plugins/joshghent-skills/skills/warden /path/to/your-repo/.claude/skills/
 
 # User-level (everywhere)
-cp -r plugins/product-skills/skills/warden ~/.claude/skills/
+cp -r plugins/joshghent-skills/skills/warden ~/.claude/skills/
 ```
 
 ## Repo layout
@@ -214,13 +214,13 @@ cp -r plugins/product-skills/skills/warden ~/.claude/skills/
 ```
 .claude-plugin/marketplace.json          # the marketplace manifest
 plugins/
-  product-skills/
+  joshghent-skills/
     .claude-plugin/plugin.json           # plugin metadata
     commands/<skill>.md                  # one /<skill> slash command per skill
     skills/<skill>/SKILL.md              # each skill's full process
 ```
 
-Everything ships in the one `product-skills` plugin so install stays short (one
+Everything ships in the one `joshghent-skills` plugin so install stays short (one
 or two commands). To add a skill: drop `commands/<name>.md` and `skills/<name>/SKILL.md`
-into `plugins/product-skills/`. Keep the command name and skill name identical
+into `plugins/joshghent-skills/`. Keep the command name and skill name identical
 (a single word where it reads well) so the dev UX stays predictable.
