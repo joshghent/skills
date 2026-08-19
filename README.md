@@ -1,12 +1,13 @@
 # Product Skills
 
 A Claude Code plugin marketplace for product engineering work. One plugin,
-`joshghent-skills`, bundling seven small, focused
+`joshghent-skills`, bundling eight small, focused
 [skills](https://docs.claude.com/en/docs/claude-code/skills): write marketing
 content from your commits, review a UI's design, audit a repo for risk, keep
 dependencies patched (driven by real production errors), review a site's search
-and AI-answer visibility, merge the PR queue and ship it live, and turn a plan
-into an importable Gantt timeline. Each ships a slash command, so you can trigger
+and AI-answer visibility, merge the PR queue and ship it live, run a weekly
+growth loop that ships one improvement, and turn a plan into an importable
+Gantt timeline. Each ships a slash command, so you can trigger
 it directly or let Claude reach for it when a request matches.
 
 ## Install
@@ -57,6 +58,7 @@ most two commands. Update later with:
 | `warden` | `/warden` | Pulls production errors (Sentry, New Relic, Cloudflare Workers…), then patches security alerts and bumps dependencies safely, verified by your own build and tests, in one clean PR. |
 | `beacon` | `/beacon` | Reviews a site's SEO and GEO (AI-answer) visibility from GSC, Ahrefs, and PostHog data, then optimises pages, metadata, and structured data. |
 | `conductor` | `/conductor` | Merges all ready open PRs in reverse chronological order, each verified green, then confirms CI ships the apps live. |
+| `growth-review` | `/growth-review` | Runs a project's weekly growth loop: health checks, the week's numbers vs last week, a dated log entry, then implements the single highest-leverage change. |
 | `gantarr` | `/gantarr` | Turns a plan, roadmap, or conversation into a valid `GanttProject` JSON file you can import at [gantarr.joshghent.com](https://gantarr.joshghent.com) to render a timeline. |
 
 ## blogger
@@ -175,6 +177,31 @@ deploying are hard to reverse.
 ```sh
 /conductor
 /conductor dry run
+```
+
+## growth-review
+
+The weekly loop for a project that needs to grow. It reads `docs/GROWTH.md` for
+the domain, search property, analytics source, and KPIs (and bootstraps that
+file the first time), then health-checks the site before trusting a single
+number — homepage serving real content, analytics events inside 48 hours,
+domain not about to expire. Clean week-over-week charts on a dead site are the
+failure mode it exists to catch.
+
+Then it pulls the week: clicks, impressions, CTR and position from search
+console, sessions and conversions from analytics, new leads and their sources,
+AI-assistant crawler hits if you log them. It appends a dated snapshot to the
+growth log, never overwriting history, and attributes honestly — "too early to
+tell" is a valid finding.
+
+It finishes by building something. One change per run, chosen by the data in
+priority order: anything broken, then striking-distance pages sitting at
+position 8–20, then CTR fixes where the ranking is fine and the title isn't
+earning the click, then the content backlog.
+
+```sh
+/growth-review
+/growth-review the pricing page
 ```
 
 ## gantarr

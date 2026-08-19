@@ -1,7 +1,7 @@
 {
   "name": "joshghent-skills",
   "version": "1.0.0",
-  "description": "Product engineering skills for Claude Code: write marketing content from your commits, review a UI's design, audit a repo for risk, keep dependencies patched from real production errors, improve search and AI-answer visibility, merge the PR queue and ship it live, and turn a plan into an importable Gantarr timeline.",
+  "description": "Product engineering skills for Claude Code: write marketing content from your commits, review a UI's design, audit a repo for risk, keep dependencies patched from real production errors, improve search and AI-answer visibility, merge the PR queue and ship it live, run a weekly growth loop that ships one data-backed improvement, and turn a plan into an importable Gantarr timeline.",
   "author": {
     "name": "Josh Ghent"
   },
