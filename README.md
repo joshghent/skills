@@ -262,3 +262,15 @@ Everything ships in the one `joshghent-skills` plugin so install stays short (on
 or two commands). To add a skill: drop `commands/<name>.md` and `skills/<name>/SKILL.md`
 into `plugins/joshghent-skills/`. Keep the command name and skill name identical
 (a single word where it reads well) so the dev UX stays predictable.
+
+## Releases
+
+Versions come from [changesets](https://github.com/changesets/changesets).
+Any PR that changes a skill runs `npx changeset` and commits the file it writes.
+Use `patch` for fixes and wording, `minor` for a new skill or new behaviour, and
+`major` when you remove or rename a skill.
+
+When those PRs land on `main`, the Release workflow opens a "chore: version skills"
+PR. It bumps `package.json`, copies the version into `plugin.json`, and writes
+`CHANGELOG.md`. Merge it and the workflow tags the release. Claude Code compares
+the `plugin.json` version, so `/plugin marketplace update` pulls the new skills.
