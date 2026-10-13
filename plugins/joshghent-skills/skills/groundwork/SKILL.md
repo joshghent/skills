@@ -1,6 +1,6 @@
 ---
 name: groundwork
-description: Local development readiness for a repo. Walks the fresh-clone path for real (install, secrets, local services, migrate and seed, run, test, lint, build, reset), scores each step, finds gaps by diffing the code against the docs, env examples, Compose and CI, then fixes them, asking before structural changes, and opens one PR with a before/after scorecard. Also checks that AGENTS.md exists, is small, and is linked from CLAUDE.md. Use when asked to make a repo easy to run locally, fix onboarding or setup, remove dependence on a shared dev database, add seed data or a reset workflow, or check whether a new engineer or agent could get the project running.
+description: Local development readiness for a repo. Walks the fresh-clone path for real (install, secrets, local services, migrate and seed, run, test, lint, build, reset), scores each step, finds gaps by diffing the code against the docs, env examples, Compose and CI, checks test coverage and whether deploys are automated, then fixes the gaps, asking before structural changes, and opens one PR with a before/after scorecard. Also checks that AGENTS.md exists, is small, and is linked from CLAUDE.md. Use when asked to make a repo easy to run locally, fix onboarding or setup, remove dependence on a shared dev database, add seed data or a reset workflow, or check whether a new engineer or agent could get the project running, or check test coverage and deployment automation.
 ---
 
 # Groundwork: Local Development Readiness
@@ -128,6 +128,46 @@ Also record, where cheap to check:
 If something can't run in this environment (no Docker daemon, no network),
 mark it **unverified** with the reason. Never mark it pass.
 
+### Test coverage
+
+Passing tests only matter if they cover the code that matters. Check:
+
+- **A coverage command exists and runs locally** (`vitest --coverage`,
+  `jest --coverage`, `pytest --cov`, `go test -cover`, `cargo llvm-cov`).
+  Run it and record the overall line/branch figure.
+- **CI measures it.** Coverage is collected in CI, and whether a threshold is
+  enforced (`coverageThreshold`, `--cov-fail-under`, Codecov status checks).
+- **Critical paths are covered.** From the coverage report, list the
+  uncovered or barely covered files on paths that matter most: auth,
+  payments and billing, data writes and migrations, public API handlers.
+  A high overall number with untested billing code is still a gap.
+- **Test types are balanced.** Note whether there are unit, integration and
+  end-to-end tests, and which of them can run locally.
+
+### Deployment automation
+
+Local readiness includes knowing how code gets from a merged PR to
+production, without one person's laptop in the loop. Check:
+
+- **Deploys are automated.** A pipeline deploys on merge to the default branch
+  or on a tag (GitHub Actions, Vercel/Netlify/Cloudflare Git integration,
+  Render, Fly, Argo, etc.). Find the workflow or platform config and name the
+  trigger.
+- **No laptop deploys.** Flag READMEs, scripts or Makefile targets that deploy
+  from a developer machine (`vercel --prod`, `wrangler deploy`, `fly deploy`,
+  `kubectl apply`, `terraform apply`, `scp`) as the documented release path,
+  and deploy credentials that only live in someone's local env.
+- **Gated on CI.** The deploy runs only after tests pass, not in parallel with
+  or instead of them.
+- **Migrations are part of the deploy.** Schema migrations run in the pipeline,
+  not by hand against production.
+- **Previews and rollback.** Whether PRs get preview environments, and whether
+  rollback is documented (a redeploy of the previous version, a platform
+  rollback command).
+
+Read config and workflow history only. Never trigger a deploy, run a pipeline
+against a real environment, or read production secrets as part of this check.
+
 Before any reset, migrate or seed command, confirm the target is local:
 `DATABASE_URL` (or equivalent) host must be `localhost`, `127.0.0.1`, a Compose
 service name, or a local socket. If it isn't, stop and ask.
@@ -145,6 +185,12 @@ show the delta so repeated runs track progress. Present to the user:
 |---|------|--------|----------|
 | 3 | Secrets | fail | `STRIPE_SECRET_KEY` required at boot, no default, not in .env.example |
 | 5 | Database | manual | README says "ask for a dump of dev"; no seed script |
+
+## Delivery
+| Check | Status | Evidence |
+|-------|--------|----------|
+| Coverage | 62% lines, not enforced | `src/billing/` 8%, no threshold in CI |
+| Deploys | manual | README: "run `vercel --prod` after merging" |
 
 ## Gaps
 Ranked, each with evidence (file:line, command output) and the proposed fix.
@@ -241,6 +287,20 @@ esac
 - Make running a subset easy (one file, one name pattern).
 - Never skip, disable or weaken a test to make the walkthrough green. Record a
   pre-existing failure (check it fails on the default branch too) and move on.
+- Coverage, **safe**: add a `test:coverage` script and collect coverage in CI.
+  **Structural**: enforcing a threshold. Set it just below the current figure
+  so it stops regressions without failing today's build.
+- Don't write tests for uncovered critical paths in this run. List them,
+  ranked, as the recommended next tests.
+
+### Deployment
+
+- Document the existing release path, trigger and rollback in
+  `docs/local-development.md` (safe).
+- Automating a manual deploy, gating deploys on CI, or moving migrations into
+  the pipeline is **structural**: propose the workflow change with the exact
+  trigger, but don't add deploy secrets or touch platform settings. Those need
+  a human, so list them under "Still manual".
 
 Avoid unnecessary infrastructure or abstraction. If a fix needs more code than
 the gap costs, record it as a recommendation instead.
@@ -292,6 +352,10 @@ Local readiness 5/10 → 9/10. One line on the biggest change.
 ## Scorecard
 | # | Step | Before | After | Command |
 |---|------|--------|-------|---------|
+
+## Delivery
+Coverage before/after and whether it's enforced; how deploys are triggered.
+Critical paths still lacking tests, ranked.
 
 ## Changes
 What changed and which gap each one closes.

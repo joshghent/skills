@@ -10,7 +10,9 @@ Mode / focus: $ARGUMENTS
 Follow the skill end to end: work in a fresh worktree without the user's `.env`,
 gather context with CI as the reference environment, find gaps by diffing code
 against `.env.example`, Compose, runtime pins and docs, then walk the 10-step
-fresh-clone path for real and score each step. Apply safe fixes directly, ask
+fresh-clone path for real and score each step. Check test coverage
+(command, CI enforcement, uncovered critical paths) and whether deploys are
+automated and gated on CI, read-only. Apply safe fixes directly, ask
 before structural changes (Compose services, seeds, reset, stand-ins, task
 runners), guard every reset against non-local databases, check `AGENTS.md` is
 small and linked from `CLAUDE.md`, verify again from a clean state, and open one

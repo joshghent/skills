@@ -246,7 +246,10 @@ the time, and the exact error or manual step.
 It finds gaps mechanically, using CI as the reference environment: env vars the
 code reads but `.env.example` doesn't declare, services the app connects to that
 Compose doesn't provide, runtime pins that disagree with CI, broken or
-undocumented scripts, and anything pointing at a shared dev database.
+undocumented scripts, and anything pointing at a shared dev database. It also
+checks delivery: test coverage (is there a command, does CI enforce it, which
+critical paths are untested) and whether deploys are automated and gated on CI
+rather than run from someone's laptop.
 
 Then it fixes them. Safe changes (docs, `.env.example`, runtime pins, broken
 scripts) go straight in. Structural ones (Compose services, deterministic seed
