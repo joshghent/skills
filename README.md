@@ -1,13 +1,13 @@
 # Product Skills
 
 A Claude Code plugin marketplace for product engineering work. One plugin,
-`joshghent-skills`, bundling eight small, focused
+`joshghent-skills`, bundling nine small, focused
 [skills](https://docs.claude.com/en/docs/claude-code/skills): write marketing
 content from your commits, review a UI's design, audit a repo for risk, keep
 dependencies patched (driven by real production errors), review a site's search
 and AI-answer visibility, merge the PR queue and ship it live, run a weekly
-growth loop that ships one improvement, and turn a plan into an importable
-Gantt timeline. Each ships a slash command, so you can trigger
+growth loop that ships one improvement, turn a plan into an importable
+Gantt timeline, and make a repo easy to run locally from a fresh clone. Each ships a slash command, so you can trigger
 it directly or let Claude reach for it when a request matches.
 
 ## Install
@@ -60,6 +60,7 @@ most two commands. Update later with:
 | `conductor` | `/conductor` | Merges all ready open PRs in reverse chronological order, each verified green, then confirms CI ships the apps live. |
 | `growth-review` | `/growth-review` | Runs a project's weekly growth loop: health checks, the week's numbers vs last week, a dated log entry, then implements the single highest-leverage change. |
 | `gantarr` | `/gantarr` | Turns a plan, roadmap, or conversation into a valid `GanttProject` JSON file you can import at [gantarr.joshghent.com](https://gantarr.joshghent.com) to render a timeline. |
+| `groundwork` | `/groundwork` | Walks the fresh-clone path for real, scores local dev readiness, fixes the gaps (asking before structural changes), and opens one PR with a before/after scorecard. |
 
 ## blogger
 
@@ -232,6 +233,32 @@ the app's toolbar and the chart renders immediately.
 ```sh
 /gantarr the plan above, starting next Monday
 /gantarr roadmap.md
+```
+
+## groundwork
+
+Local development readiness, checked by doing rather than reading. In a fresh
+worktree without your `.env`, it follows the docs the way a new joiner would and
+scores ten steps: clone, prerequisites, secrets, local services, database,
+run, tests, lint/typecheck, build, and reset. Each step records the command,
+the time, and the exact error or manual step.
+
+It finds gaps mechanically, using CI as the reference environment: env vars the
+code reads but `.env.example` doesn't declare, services the app connects to that
+Compose doesn't provide, runtime pins that disagree with CI, broken or
+undocumented scripts, and anything pointing at a shared dev database.
+
+Then it fixes them. Safe changes (docs, `.env.example`, runtime pins, broken
+scripts) go straight in. Structural ones (Compose services, deterministic seed
+data, a guarded `reset → migrate → seed`, local stand-ins for third-party APIs)
+are proposed mid-run for you to pick. It also checks `AGENTS.md` exists, stays
+small, and is linked from `CLAUDE.md`. Finally it tears everything down, re-runs
+all ten steps from clean, and opens one PR with the before/after scorecard.
+
+```sh
+/groundwork
+/groundwork audit only
+/groundwork apps/api
 ```
 
 ## Manual install
