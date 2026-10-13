@@ -1,6 +1,6 @@
 ---
 name: warden
-description: Automated dependency and security maintenance for a repo. Pulls live production error signals (Sentry, New Relic, Cloudflare Workers, Vercel, Supabase, Datadog) to prioritise by real impact, patches Dependabot/advisory alerts (security first), bumps outdated deps safely, upgrades end-of-life runtimes to the current LTS using endoflife.date, verifies with the project's own build and tests, and opens one clean, well-summarised PR. Use when asked to patch vulnerabilities, clear Dependabot alerts, update dependencies, upgrade an end-of-life runtime, check what's breaking in production, or do routine dependency maintenance.
+description: Automated dependency and security maintenance for a repo. Pulls live production error signals (Sentry, New Relic, Cloudflare Workers, Vercel, Supabase, Datadog) to prioritise by real impact, patches Dependabot/advisory alerts (security first), bumps outdated deps safely, upgrades end-of-life runtimes to the current LTS using endoflife.date, verifies with the project's own build and tests, and opens one clean, well-summarised PR. Also runs an initial security PR mode that collects every open high and critical alert from GitHub (Dependabot, code scanning, secret scanning) across one repo, a list of repos, or an org, then opens a PR that fixes or triages them. Use when asked to patch vulnerabilities, clear Dependabot alerts, update dependencies, upgrade an end-of-life runtime, check what's breaking in production, or do routine dependency maintenance.
 ---
 
 # Warden: Dependency and Security Maintenance
@@ -19,6 +19,15 @@ breaking in production first, then security updates, then end-of-life runtimes,
 then safe version bumps. Every change is verified by the project's own build and
 tests before it goes in a PR. Never weaken or bypass tests to make an upgrade
 look green. When in doubt, leave a dep alone and say why.
+
+## Modes
+
+- **Full sweep** (default): sections 0 to 7. Security, EoL runtimes, then routine
+  bumps, as one PR.
+- **Initial security PR**: section 8. Only open high and critical alerts from all
+  three GitHub security sources, fixed or triaged in one short PR. Use it when the
+  user asks to "clear the highs and criticals", start a security baseline, or
+  triage GitHub security alerts. Routine bumps and EoL upgrades stay out.
 
 ## 0. Set up isolation first
 
@@ -332,6 +341,113 @@ and whether this sweep addresses them.
 
 Never reference Claude or AI in the commit messages or PR body.
 
+## 8. Initial security PR (high and critical alerts)
+
+### 8.1 Ask for scope first
+
+Before touching anything, ask which repos to cover: **the current repo**, **a
+list of repos**, or **a whole org**. For an org, get counts per repo from the
+org-level endpoints and show them so the user can pick:
+
+```bash
+{ gh api -X GET orgs/{org}/dependabot/alerts --paginate -f state=open -f severity=critical,high
+  gh api -X GET orgs/{org}/code-scanning/alerts --paginate -f state=open -f severity=critical,high
+  gh api -X GET orgs/{org}/secret-scanning/alerts --paginate -f state=open
+} | jq -r '.[].repository.full_name' | sort | uniq -c | sort -rn
+```
+
+Skip archived repos and forks. Run repos one at a time, each in its own
+worktree or clone. A failure in one repo is recorded and the run moves on.
+
+### 8.2 Collect (read-only, paginated)
+
+Per repo, default branch only:
+
+```bash
+gh api -X GET repos/{o}/{r}/dependabot/alerts --paginate -f state=open -f severity=critical,high
+gh api -X GET repos/{o}/{r}/code-scanning/alerts --paginate -f state=open -f severity=critical,high
+gh api -X GET repos/{o}/{r}/secret-scanning/alerts --paginate -f state=open
+```
+
+- Code scanning: confirm `rule.security_severity_level` is `high` or `critical`.
+  The plain `rule.severity` only says error, warning or note.
+- Secret scanning has no severity. Treat every open alert as critical. Never
+  print the `secret` field.
+- A 403 or 404 means the feature is off or the token lacks `security_events`.
+  Name the missing source in the summary and carry on with the others.
+- Zero alerts across all sources: report that and stop. No empty PR.
+
+### 8.3 Group and classify
+
+Reduce each alert to: source, id, severity, package or rule, location, fix
+version, URL. Group Dependabot alerts by package and manifest, since one bump
+closes several. Use the highest fix version in the group, deriving it from the
+affected range when `first_patched_version` is empty (see the gotcha above).
+
+Every group gets exactly one outcome:
+
+- **Fix.** A patched version or a clear code change exists, and build and tests
+  pass.
+- **Triage.** No patch exists, the fix breaks the build, the package is dev-only
+  or unreachable, or a code fix needs a design call. Give a one-line reason.
+- **Escalate.** Every secret. A PR can't fix a leaked credential. It needs
+  rotation by a human.
+
+### 8.4 Apply
+
+- One commit per fix group, so a failing one reverts alone.
+- Dependency fixes follow sections 3 to 6 (overrides bounded to the same major,
+  no blanket updates). They need no new test. The existing suite and a re-run of
+  the audit are the check.
+- Code scanning fixes edit app code, one commit per alert. For each:
+  1. Search for existing tests that cover the flagged file or function.
+  2. If a test already exercises the vulnerable path, run it. Add a failing case
+     only when the vulnerable behaviour isn't asserted.
+  3. If no test exists, write the smallest failing test, confirm it fails for the
+     right reason, then make the fix and confirm green.
+  4. If the path can't be tested, say why in the PR and skip the test.
+  Match the project's test framework. If the fix needs a design decision, make
+  it a Triage item and leave the code alone.
+
+### 8.5 Open the PR
+
+If a `deps/security-initial` branch or open PR already exists, update it rather
+than opening a second one. Label the PR `security-sweep` (conductor keys off
+this). Keep the body short enough to scan in under a minute:
+
+```markdown
+Fixes 5, triages 2, escalates 1 of 8 high/critical alerts.
+
+### Needs a human
+- Secret: AWS key in `config/old.ts` ([alert](url)). Rotate it, then close the alert.
+
+### Fixed
+| Alert | Package / rule | Sev | Change |
+|-------|----------------|-----|--------|
+
+### Triaged (not fixed)
+| Alert | Why | Suggested dismissal |
+|-------|-----|---------------------|
+
+### Blocked
+| Alert | Error |
+|-------|-------|
+
+Verified: build, tests, audit. Nothing was dismissed.
+```
+
+Rules for the body:
+- Omit any section that is empty.
+- Suggested dismissal uses GitHub's reasons: `not_used`, `tolerable_risk`,
+  `no_bandwidth`, `inaccurate`, `fix_started`.
+- **Do not dismiss alerts through the API.** Dismissal changes state other people
+  see. Only do it after the user approves a specific batch.
+- Alerts close when GitHub rescans the default branch after merge, not locally.
+  Say so, and re-run the local audit to confirm the packages are patched.
+
+End the run with a **Next action** line listing each PR URL and, if the user
+wants them merged, "run conductor on these repos". Warden never merges.
+
 ## Output when not opening a PR
 
 If the user only wants analysis (not a PR), produce the same tables
@@ -352,3 +468,6 @@ them.
 - Upgrade end-of-life runtimes to the current LTS (check endoflife.date) and
   verify the app runs and tests pass on it before shipping.
 - Record what you skipped and why.
+- In initial security PR mode, ask for scope first, cover all three alert
+  sources, never dismiss alerts without approval, escalate secrets, and add a
+  test per code fix only when no existing test covers it.

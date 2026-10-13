@@ -75,7 +75,9 @@ review/checks), `BEHIND` (needs update against base), `DIRTY` (conflicts),
 Include a PR only if **all** hold; otherwise skip it and record the reason:
 
 - **Not a draft**, and no blocking label (`do-not-merge`, `blocked`, `wip`,
-  `hold`, `dependencies` if the user excludes bots, etc.).
+  `hold`, `dependencies` if the user excludes bots, etc.). PRs labelled
+  `security-sweep` (opened by warden) are never excluded by the bot or
+  `dependencies` rules. They still need every check and approval below.
 - **Targets the base branch** in scope (don't merge stacked PRs that target
   other feature branches into main).
 - **Required checks passing** (`statusCheckRollup` — every *required* context is
@@ -97,6 +99,11 @@ develop conflicts) as the branch moves. That's expected — the loop in step 4
 re-updates and re-checks each remaining PR after every merge, so it self-heals;
 conflicts that can't auto-resolve get skipped. If the user would rather minimise
 churn, offer oldest-first as an alternative, but default to what they asked for.
+
+**Security first.** PRs labelled `security-sweep` go to the front of the queue
+regardless of age, then the rest follow newest first. Later PRs that touch the
+same lockfile may go `BEHIND` or `DIRTY`. The re-check loop in step 4 updates or
+skips them as usual.
 
 ## 4. Merge the train, one at a time
 
@@ -123,6 +130,10 @@ base and invalidates the others' up-to-date status. For each ready PR, in order:
    now be `BEHIND`, `DIRTY`, or newly `UNSTABLE`. Re-pull their status before
    the next iteration; a PR that just went `DIRTY` (conflicts) gets skipped with
    a note.
+
+Before the first merge, capture a production error baseline (top recurring
+errors and rate, using the observability sources in warden section 3). Step 5
+compares against it.
 
 Stop the train and report if the base branch's own post-merge CI goes red at any
 point — don't keep stacking merges onto a broken `main`.
@@ -167,6 +178,21 @@ Then **smoke-check the live app**, don't trust a green pipeline alone:
   the warden skill — Sentry/New Relic/Workers logs) to catch a deploy that ships
   but immediately throws.
 
+### Confirm security alerts closed
+
+If any merged PR carried the `security-sweep` label, re-count open high and
+critical alerts for the repo after the deploy:
+
+```bash
+gh api -X GET repos/{owner}/{repo}/dependabot/alerts --paginate -f state=open -f severity=critical,high -q '.[].number' | wc -l
+gh api -X GET repos/{owner}/{repo}/code-scanning/alerts --paginate -f state=open -f severity=critical,high -q '.[].number' | wc -l
+```
+
+GitHub rescans after the merge, so retry for a few minutes. Anything still open
+afterwards is reported as "still open, rescan pending", not as a failure. Open
+secret-scanning alerts are expected to remain until a human rotates the secret.
+Compare post-deploy errors with the baseline from step 4.
+
 ### If CI does not ship live
 
 The user asked to *make sure* CI ships the apps — so treat a missing or broken
@@ -202,6 +228,8 @@ already configured. If a required secret is missing, name it and stop.
   verified (deploy succeeded + smoke check), or the deploy gap is clearly
   flagged.
 - Detect the merge method and deploy platform from the repo; don't assume.
+- `security-sweep` PRs merge first and are never excluded as bot PRs, but they
+  get no exemption from checks, approvals or protection.
 - Never reference Claude or AI in merge commits, tags, or workflow changes.
 
 ## Output format
@@ -235,6 +263,12 @@ output — nothing is merged or deployed.)
 |---------------|-----------|--------|------------|
 | api (Workers) | #4711 | success | 200, version = <sha> ✓ |
 | web (Pages)   | #4712 | success | 200 ✓ |
+
+## Security alerts (if a security-sweep PR merged)
+| Source | Open high/critical before | After rescan |
+|--------|---------------------------|--------------|
+| Dependabot | 5 | 0 |
+| Secret scanning | 1 | 1 (needs rotation) |
 
 ## Deploy gaps (if any)
 - What isn't auto-shipping and the fix (e.g. "worker deploys on tag only —

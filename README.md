@@ -122,8 +122,16 @@ isolates breaking major bumps, and verifies every change with the project's own
 build and tests before opening a PR. The PR ships with a production-errors
 baseline, and it records what it skipped and why.
 
+`/warden security` runs an initial security PR instead. It asks whether to cover
+the current repo, a list of repos, or an org, collects every open high and
+critical alert from Dependabot, code scanning and secret scanning, and opens one
+short PR labelled `security-sweep` that fixes or triages them. Leaked secrets
+are escalated for rotation, code fixes get a test only when no existing test
+covers the path, and nothing is dismissed without your approval.
+
 ```sh
 /warden
+/warden security
 /warden analysis only
 ```
 
@@ -173,6 +181,9 @@ deploy run, and smoke-checks the live app (200 + version match). If there's no
 deploy step or it didn't trigger, it flags the gap and offers to trigger or wire
 up the deploy. It confirms the plan before the first merge, since merging and
 deploying are hard to reverse.
+
+PRs labelled `security-sweep` (from `/warden security`) merge first, and after
+the deploy conductor re-counts open high and critical alerts.
 
 ```sh
 /conductor
