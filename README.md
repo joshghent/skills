@@ -41,6 +41,18 @@ marketplace and installs in a single command:
 If that errors with `Marketplace "joshghent/skills" not found`, your version
 doesn't support the shorthand — use the two-step form above.
 
+**Seeing `product-skills` instead?** This repo used to be called
+`product-skills`. If you added the marketplace back then, Claude Code is still
+holding the old cached name, so `joshghent-skills@joshghent-skills` fails.
+Run `/plugin marketplace list` to confirm, then remove the old entry and add it
+again:
+
+```sh
+/plugin marketplace remove product-skills
+/plugin marketplace add joshghent/skills
+/plugin install joshghent-skills@joshghent-skills
+```
+
 Every skill ships in the single `joshghent-skills` plugin, so install stays at
 most two commands. Update later with:
 
