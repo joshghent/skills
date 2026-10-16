@@ -1,5 +1,11 @@
 # joshghent-skills
 
+## 1.2.1
+
+### Patch Changes
+
+- [#9](https://github.com/joshghent/skills/pull/9) [`ffde864`](https://github.com/joshghent/skills/commit/ffde864bf8e129c147b8ff17a1bd02d3b2f0266c) Thanks [@joshghent](https://github.com/joshghent)! - Document installing a single skill with `npx skills add joshghent/skills --skill groundwork` and link the `groundwork` launch post.
+
 ## 1.2.0
 
 ### Minor Changes
