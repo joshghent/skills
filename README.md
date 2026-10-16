@@ -25,6 +25,13 @@ repo), then install the plugin from it:
 
 Then `/reload-plugins` (or restart Claude Code) to activate it.
 
+Prefer the [skills CLI](https://github.com/vercel-labs/skills)? Install a single
+skill from this repo into any supported agent, for example `groundwork`:
+
+```sh
+npx skills add joshghent/skills --skill groundwork
+```
+
 **Read the install line as `plugin@marketplace`.** The part after `@` is the
 **marketplace name** — which this repo names `joshghent-skills` — *not* the
 GitHub repo. So it's `joshghent-skills@joshghent-skills`, not
@@ -263,6 +270,9 @@ all ten steps from clean, and opens one PR with the before/after scorecard.
 /groundwork audit only
 /groundwork apps/api
 ```
+
+Read the story behind it in
+[/groundwork v1.0 - a new skill to help your projects](https://joshghent.com/blog/groundwork).
 
 ## Manual install
 
