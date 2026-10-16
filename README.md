@@ -272,7 +272,7 @@ all ten steps from clean, and opens one PR with the before/after scorecard.
 ```
 
 Read the story behind it in
-[/groundwork v1.0 - a new skill to help your projects](https://joshghent.com/blog/groundwork).
+[/groundwork: a skill that makes any repo runnable from a fresh clone](https://joshghent.com/blog/groundwork).
 
 ## Manual install
 
