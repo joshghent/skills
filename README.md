@@ -73,7 +73,7 @@ most two commands. Update later with:
 |-------|---------|--------------|
 | `blogger` | `/blogger` | Turns shipped commits into dated blog posts, changelog entries, and social snippets in your site's voice. |
 | `design-review` | `/design-review` | Reviews a UI for conversion, UI/UX, accessibility, performance, and SEO against Apple/FT/OpenAI standards, and flags AI design slop. |
-| `sentinel` | `/sentinel` | Audits the whole repo for quality, coverage, CI, security, and AI-agent fragility, ranked by production risk. |
+| `sentinel` | `/sentinel` | Scores a capability baseline and supply-chain hygiene, then audits the whole repo for quality, coverage, CI, security, and AI-agent fragility, ranked by production risk. |
 | `warden` | `/warden` | Pulls production errors (Sentry, New Relic, Cloudflare Workers…), then patches security alerts and bumps dependencies safely, verified by your own build and tests, in one clean PR. |
 | `beacon` | `/beacon` | Reviews a site's SEO and GEO (AI-answer) visibility from GSC, Ahrefs, and PostHog data, then optimises pages, metadata, and structured data. |
 | `conductor` | `/conductor` | Merges all ready open PRs in reverse chronological order, each verified green, then confirms CI ships the apps live. |
@@ -123,6 +123,14 @@ the code most likely to break, rot, or quietly ship defects: missing tests on
 critical paths, weak CI, duplicated concepts, dead code, silent fallbacks, and
 patterns that make a repo hard for the next agent to work in safely.
 
+It starts with a capability baseline, scoring each of these 0, 1, or 2 with
+evidence: centralised observability, error monitoring, automated testing,
+CI/CD, preview environments, production alerting, OIDC deployment auth,
+disaster recovery tests, and security remediation. Then it checks the supply
+chain. Is Dependabot on and does `dependabot.yml` cover every ecosystem? Are
+third-party actions pinned to commit SHAs? Who hears about security issues in
+each vendor the code depends on?
+
 It runs the project's own build, test, typecheck, and lint commands where it
 can, then ranks findings by production and maintenance risk into a fix plan.
 
@@ -139,8 +147,9 @@ Workers, Vercel, Supabase, Datadog — read-only) so real impact drives priority
 then detects the package manager from the lockfile, fixes known vulnerabilities
 before routine bumps, prefers lockfile-only overrides for transitive issues,
 isolates breaking major bumps, and verifies every change with the project's own
-build and tests before opening a PR. The PR ships with a production-errors
-baseline, and it records what it skipped and why.
+build and tests before opening a PR. It also adds or extends
+`dependabot.yml` and pins third-party actions to commit SHAs. The PR ships with
+a production-errors baseline, and it records what it skipped and why.
 
 `/warden security` runs an initial security PR instead. It asks whether to cover
 the current repo, a list of repos, or an org, collects every open high and
@@ -308,12 +317,39 @@ plugins/
     .claude-plugin/plugin.json           # plugin metadata
     commands/<skill>.md                  # one /<skill> slash command per skill
     skills/<skill>/SKILL.md              # each skill's full process
+    skills/<skill>/references/*.md       # templates a skill reads only when needed
+    evals/<skill>-trigger/               # checks that a plain request picks the right skill
+scripts/validate-skills.mjs              # the checks CI runs on every skill
 ```
 
 Everything ships in the one `joshghent-skills` plugin so install stays short (one
 or two commands). To add a skill: drop `commands/<name>.md` and `skills/<name>/SKILL.md`
 into `plugins/joshghent-skills/`. Keep the command name and skill name identical
-(a single word where it reads well) so the dev UX stays predictable.
+(a single word where it reads well) so the dev UX stays predictable. Then add
+`evals/<name>-trigger/`, a row in the table above, and the name in both
+manifest descriptions. `npm run validate` tells you what's missing.
+
+## Checks
+
+CI runs on every pull request:
+
+- `npm run validate`: each skill's name matches its folder, its description is
+  under 700 characters with a "Use when" clause, it has a command, a README
+  row, a mention in both manifests, and a trigger eval, and it contains no
+  wording Snyk's audit flags.
+- The skills CLI lists every skill in the repo.
+- A changeset exists for the PR.
+- actionlint and zizmor check the workflows. Every action is pinned to a commit
+  SHA, and Dependabot keeps those pins current.
+
+The trigger evals need a Claude login, so they run locally rather than in CI:
+
+```sh
+npm run eval
+```
+
+Each case sends a plain request, such as "patch our Dependabot alerts", and
+passes if the matching skill loads. A full run costs about $0.50.
 
 ## Releases
 
