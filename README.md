@@ -349,7 +349,20 @@ npm run eval
 ```
 
 Each case sends a plain request, such as "patch our Dependabot alerts", and
-passes if the matching skill loads. A full run costs about $0.50.
+passes if the matching skill loads. A full run costs about $0.60 and takes
+under a minute.
+
+An [hk](https://hk.jdx.dev) pre-commit hook runs both for you. Set it up once:
+
+```sh
+mise install
+hk install
+```
+
+The hook runs `npm run validate` whenever a commit touches the plugin, the
+manifests or the README. It runs the evals only when a skill, command or eval
+changes, and blocks the commit if any case fails. Skip it for one commit with
+`git commit --no-verify`.
 
 ## Releases
 

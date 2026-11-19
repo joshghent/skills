@@ -1,0 +1,19 @@
+amends "package://github.com/jdx/hk/releases/download/v2.13.0/hk@2.13.0#/Config.pkl"
+
+hooks {
+    ["pre-commit"] {
+        steps {
+            ["validate"] {
+                glob = List("plugins/**", ".claude-plugin/**", "README.md")
+                check = "npm run validate"
+            }
+            // Costs about $0.60 per run, so only when a skill, command or eval changes.
+            ["trigger-evals"] {
+                glob = List("plugins/joshghent-skills/skills/**", "plugins/joshghent-skills/commands/**", "plugins/joshghent-skills/evals/**")
+                exclude = List("plugins/joshghent-skills/evals/results/**")
+                check = "npm run eval"
+                depends = List("validate")
+            }
+        }
+    }
+}
