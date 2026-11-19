@@ -333,8 +333,8 @@ manifest descriptions. `npm run validate` tells you what's missing.
 
 CI runs on every pull request:
 
-- `npm run validate`: each skill's name matches its folder, its description is
-  under 700 characters with a "Use when" clause, it has a command, a README
+- `npm run validate`: each skill's name matches its folder, its `SKILL.md` is
+  500 lines or fewer, its description is under 700 characters with a "Use when" clause, it has a command, a README
   row, a mention in both manifests, and a trigger eval, and it contains no
   wording Snyk's audit flags.
 - The skills CLI lists every skill in the repo.
