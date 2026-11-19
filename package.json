@@ -12,7 +12,9 @@
     "version": "changeset version && node scripts/sync-plugin-version.mjs",
     "check-plugin-version": "node scripts/sync-plugin-version.mjs --check",
     "validate": "node scripts/validate-skills.mjs",
-    "eval": "claude plugin eval plugins/joshghent-skills --tag trigger --runs 1 --no-publish --trust-plugin --ablation none -j 4 --max-cost-usd 2"
+    "eval": "claude plugin eval plugins/joshghent-skills --tag trigger --runs 1 --no-publish --trust-plugin --ablation none -j 4 --max-cost-usd 2",
+    "test": "node --test 'scripts/**/*.test.mjs'",
+    "routing": "node scripts/check-routing.mjs"
   },
   "packageManager": "npm@10.9.8",
   "devDependencies": {

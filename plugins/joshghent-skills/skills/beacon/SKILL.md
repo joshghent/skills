@@ -1,6 +1,6 @@
 ---
 name: beacon
-description: Data-driven SEO and GEO (Generative Engine Optimization) review and optimisation for a website. Pulls real data from Google Search Console (via Ahrefs), Ahrefs (Site Explorer, Site Audit, Keywords Explorer, Brand Radar), and PostHog, then reviews technical health, indexation, rankings, content, backlinks, and AI-answer visibility — and applies the fixes. Use when the user wants an SEO audit, GEO / AI-search / LLM-visibility review, to improve rankings or organic traffic, to get cited in ChatGPT/Perplexity/AI Overviews, or to optimise pages, metadata, structured data, or content for search and AI engines.
+description: Data-driven SEO and GEO (Generative Engine Optimization) review and optimisation for a website. Pulls real data from Google Search Console (via Ahrefs), Ahrefs (Site Explorer, Site Audit, Keywords Explorer, Brand Radar), and PostHog, then reviews technical health, indexation, rankings, content, backlinks, and AI-answer visibility — and applies the fixes. Use when the user wants an SEO audit, GEO / AI-search / LLM-visibility review, to improve rankings or organic traffic, to get cited in ChatGPT/Perplexity/AI Overviews, or to improve the SEO of existing pages, blog posts, metadata, structured data, or content for search and AI engines.
 ---
 
 # Beacon: Search & AI-Answer Visibility
