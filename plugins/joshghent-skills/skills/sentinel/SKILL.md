@@ -1,6 +1,6 @@
 ---
 name: sentinel
-description: Whole-codebase quality, coverage, CI, and AI-agent fragility review for products built or maintained by AI agents.
+description: Whole-repo audit ranked by production risk. Scores a capability baseline (observability, error monitoring, testing, CI/CD, previews, alerting, OIDC deploys, disaster recovery, security remediation), checks supply-chain hygiene (Dependabot, SHA-pinned actions, vendor security notices), then reviews quality, coverage and AI-agent fragility. Use when asked to audit a repo, review code quality, test coverage, CI or security posture, or check whether agents can safely maintain the codebase.
 ---
 
 # Sentinel: Whole-Codebase Quality and Coverage Review
@@ -63,6 +63,72 @@ Identify:
 
 Do not assume the stack from filenames alone. Confirm through package files, lockfiles, config, README, CI files, and source layout.
 
+## Capability Baseline
+
+Score these before the detailed review. They decide whether a production
+problem gets noticed, diagnosed, and fixed, so a weak score here outranks most
+code smells.
+
+Score each one **2** (in place), **1** (partial), **0** (missing), or
+**Unknown**. Every score needs evidence: a config file, a workflow, an SDK init,
+a runbook. Some of these live outside the repo (alert rules, backup schedules,
+vendor settings). Check with the CLI or API when you have access. Otherwise mark
+them Unknown and say what to confirm. Never score 2 on a guess.
+
+| Capability | 2 means | Where to look |
+|---|---|---|
+| Centralised observability | Logs, metrics, and traces from every service land in one tool, with request IDs that join them up. | Logger setup, OpenTelemetry config, `observability` in `wrangler.jsonc`, Logpush or drain config, Datadog/Grafana/Axiom/New Relic SDKs |
+| Error monitoring | Unhandled errors from frontend and backend reach an error tracker, tagged by release, with source maps. | Sentry/Bugsnag/Rollbar init, DSN in env examples, source map upload in CI |
+| Automated testing | Tests run on every PR, block merge, and cover the critical paths listed below. | CI workflows, branch protection, test files next to critical modules |
+| CI/CD | Merging to the default branch deploys with no manual step, and the PR gate runs build, types, lint, and tests. | Deploy workflows, platform git integration, release scripts |
+| Preview environments | Each PR gets its own deploy URL. | Vercel/Netlify/Cloudflare Pages previews, `wrangler versions upload`, review apps |
+| Production alerting | A named person or channel gets notified on error rate, uptime, and failed jobs. | Alert rules as code, uptime monitors, PagerDuty/Opsgenie/Slack hooks, cron failure alerts |
+| OIDC deployment auth | CI gets short-lived cloud credentials through OIDC instead of stored long-lived keys. | `permissions: id-token: write`, `role-to-assume`, workload identity. If the platform has no OIDC option, score on whether tokens are scoped to one project and expire |
+| Disaster recovery tests | Backups exist, a restore has been tested in the last quarter, and a runbook says how. | Backup config, D1 Time Travel, point-in-time recovery, R2/S3 versioning, `docs/runbooks` |
+| Security remediation | Alerts are on, high and critical ones get fixed inside a stated time, and nothing sits open for months. | Dependabot alerts, code scanning, secret scanning, `SECURITY.md`, age of open alerts |
+
+### Supply-chain checks
+
+Score these as part of security remediation, and list every gap as its own
+finding.
+
+- **Dependabot.** Check that alerts and security updates are on, and that
+  `.github/dependabot.yml` covers every ecosystem in the repo, including
+  `github-actions` and `docker`. Group minor and patch updates to keep the
+  noise down, and set a `cooldown` of at least 7 days so a freshly published,
+  possibly compromised release isn't proposed the day it ships.
+
+  ```bash
+  gh api repos/{owner}/{repo}/vulnerability-alerts -i 2>&1 | head -1   # 204 = alerts on
+  gh api repos/{owner}/{repo} --jq .security_and_analysis
+  cat .github/dependabot.yml 2>/dev/null
+  ```
+
+- **SHA-pinned actions.** Every third-party `uses:` should point at a full
+  40-character commit SHA with the version in a comment
+  (`actions/checkout@<sha> # v4.2.2`). A tag can be moved to point at new code.
+  A SHA can't.
+
+  ```bash
+  grep -rnE 'uses: [^ ]+@' .github/workflows | grep -vE '@[0-9a-f]{40}'
+  ```
+
+  Also flag workflows with no `permissions:` block and any
+  `pull_request_target` workflow that checks out the PR's code.
+
+- **Secret and code scanning.** Secret scanning and push protection should be
+  on. Code scanning (CodeQL or similar) should run for the languages it
+  supports.
+
+- **Vendor security notices.** List each third-party service the code depends
+  on, found from SDKs, env vars, and infrastructure config. For each one, check
+  whether someone will hear about that vendor's security issues: a subscription
+  to its security or status page, or an owner listed in `SECURITY.md` or the
+  runbook. Self-hosted software (Postgres, Redis, nginx, base images) needs a
+  watched advisory feed. You usually can't see this from the repo. List each
+  vendor as "needs confirmation" with who should subscribe, and don't invent
+  page URLs.
+
 ## CI And Build Review
 
 Inspect common CI locations:
@@ -84,7 +150,8 @@ Review whether CI checks:
 - Run security/dependency checks, if present
 - Upload or enforce coverage
 - Block merges on failing checks
-- Use pinned versions rather than floating, fragile actions
+- Pin third-party actions to a full commit SHA with a version comment, not a tag
+- Set a least-privilege `permissions:` block
 - Avoid leaking secrets
 - Cache safely without masking dependency issues
 
@@ -106,36 +173,7 @@ cat pom.xml 2>/dev/null || true
 cat build.gradle 2>/dev/null || true
 ```
 
-Run the most appropriate commands available.
-
-Examples:
-
-```bash
-npm test
-npm run test
-npm run test:coverage
-npm run typecheck
-npm run lint
-
-pnpm test
-pnpm test -- --coverage
-pnpm typecheck
-pnpm lint
-
-yarn test
-yarn test --coverage
-
-pytest
-pytest --cov
-
-go test ./...
-go test ./... -cover
-
-cargo test
-
-mvn test
-./gradlew test
-```
+Run the commands those files define. Don't guess at script names.
 
 If commands fail because dependencies are missing, install only if the repo convention is clear and safe. Otherwise report the exact blocker and infer from static inspection.
 
@@ -389,7 +427,8 @@ Follow this order.
 
 ### 1. Baseline
 
-Collect repo structure, stack, scripts, CI, and current git state.
+Collect repo structure, stack, scripts, CI, and current git state. Score the
+capability baseline and run the supply-chain checks.
 
 ### 2. Execute Checks
 
@@ -434,82 +473,8 @@ Give a practical remediation plan in phases.
 
 ## Output Format
 
-Use this exact output structure.
-
-```markdown
-# Sentinel Review
-
-## Executive Summary
-
-- Overall risk: Low | Medium | High | Critical
-- CI health: Pass | Partial | Fail | Missing | Not run
-- Test health: Strong | Adequate | Weak | Missing | Not run
-- Coverage confidence: Strong | Adequate | Weak | Misleading | Unknown
-- Agent-maintainability: Strong | Adequate | Fragile | Dangerous
-
-One paragraph summary of the main risk.
-
-## Commands Run
-
-| Command | Result | Notes |
-|---|---:|---|
-| `command here` | Pass/Fail/Skipped | concise note |
-
-If no commands could be run, explain why.
-
-## Top Findings
-
-### 1. Finding title
-
-- Severity: Critical | High | Medium | Low
-- Category: CI | Coverage | Code smell | Architecture | Security | Data | AI-agent fragility | Docs
-- Evidence: file paths, functions, commands, or observed behaviour
-- Why it matters: concrete production or maintainability risk
-- Recommended fix: specific action
-- Minimal first step: smallest useful change
-- Release blocker: Yes | No | Depends
-
-Repeat for each material finding.
-
-## Coverage Gaps
-
-| Area | Current evidence | Risk | Suggested test |
-|---|---|---|---|
-| module/flow | test presence or absence | why it matters | first useful test |
-
-## AI-Agent Fragility Map
-
-| Pattern | Evidence | Risk | Fix |
-|---|---|---|---|
-| duplicated concept / dead code / unsafe fallback | path | issue | fix |
-
-## Code Smells Worth Fixing
-
-Group by theme. Avoid cosmetic noise.
-
-## Good Signs
-
-List the things that are already solid and worth preserving.
-
-## 30/60/90 Minute Fix Plan
-
-### First 30 minutes
-
-Highest leverage changes that reduce risk quickly.
-
-### Next 60 minutes
-
-Medium-sized improvements.
-
-### Next 90 minutes
-
-Bigger refactors or test additions.
-
-## Suggested Follow-Up Tasks
-
-- [ ] Task phrased as an actionable engineering ticket
-- [ ] Task phrased as an actionable engineering ticket
-```
+Write the report using `references/report-template.md`. Read it before you
+start writing.
 
 ## Editing Rules
 
@@ -539,6 +504,7 @@ A repo passes this review only if:
 - Production-sensitive flows are explicit and testable.
 - Future agents can understand where to make changes safely.
 - There are no obvious high-severity security, data integrity, or release risks.
+- No capability-baseline item scores 0 without a recorded reason, and every third-party action is pinned to a SHA.
 
 If the repo "works" but is fragile, say so.
 

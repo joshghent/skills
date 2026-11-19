@@ -1,6 +1,6 @@
 ---
 name: warden
-description: Automated dependency and security maintenance for a repo. Pulls live production error signals (Sentry, New Relic, Cloudflare Workers, Vercel, Supabase, Datadog) to prioritise by real impact, patches Dependabot/advisory alerts (security first), bumps outdated deps safely, upgrades end-of-life runtimes to the current LTS using endoflife.date, verifies with the project's own build and tests, and opens one clean, well-summarised PR. Also runs an initial security PR mode that collects every open high and critical alert from GitHub (Dependabot, code scanning, secret scanning) across one repo, a list of repos, or an org, then opens a PR that fixes or triages them. Use when asked to patch vulnerabilities, clear Dependabot alerts, update dependencies, upgrade an end-of-life runtime, check what's breaking in production, or do routine dependency maintenance.
+description: Dependency and security maintenance in one verified PR. Ranks work by live production errors, patches security alerts first, bumps outdated deps, upgrades end-of-life runtimes, adds Dependabot config and pins actions to SHAs. A security mode fixes or triages every open high and critical GitHub alert across a repo or org. Use when asked to patch vulnerabilities, clear Dependabot alerts, update dependencies, upgrade an end-of-life runtime, pin actions, or do routine dependency maintenance.
 ---
 
 # Warden: Dependency and Security Maintenance
@@ -86,6 +86,31 @@ gh api repos/{owner}/{repo}/dependabot/alerts --paginate \
 
 Also fold in the package manager's own audit output and `outdated` listing
 (`npm outdated`, `pnpm outdated`, etc.) for non-security bumps.
+
+### Keep the update machinery in place
+
+Fix these in the same sweep, since they decide whether next week's alerts reach
+anyone:
+
+- **Dependabot config.** If `.github/dependabot.yml` is missing, or skips an
+  ecosystem the repo uses, add it. Cover each package manager plus
+  `github-actions` and `docker` where present, run weekly, group minor and
+  patch updates, and set `cooldown: default-days: 7` so brand-new releases wait
+  a week before Dependabot proposes them. If alerts or security updates are off
+  (`gh api repos/{owner}/{repo}/vulnerability-alerts` returns 404), say so in
+  the PR. Turning them on is a repo setting for the owner.
+- **SHA-pinned actions.** Pin every third-party `uses:` to the full commit SHA
+  of the tag it uses now, with the tag as a comment. Look up the SHA rather
+  than trusting a pasted one:
+
+  ```bash
+  grep -rnE 'uses: [^ ]+@' .github/workflows | grep -vE '@[0-9a-f]{40}'
+  gh api repos/actions/checkout/commits/v4.2.2 --jq .sha
+  # uses: actions/checkout@<that sha> # v4.2.2
+  ```
+
+  Dependabot's `github-actions` ecosystem keeps SHA pins current, so the two
+  go together.
 
 ## 3. Pull production error signals
 
@@ -331,6 +356,10 @@ One line: what this sweep does (e.g. "Patch 3 security alerts + 6 routine bumps"
 | Runtime/Software | From → To | Supported until (endoflife.date) |
 |------------------|-----------|----------------------------------|
 | node | 20 → 24 | 2028-04 |
+
+## Supply chain
+- `dependabot.yml`: added / extended with <ecosystems> / already complete
+- Actions pinned to SHAs: <n> pinned, <n> already pinned
 
 ## Production errors observed
 Top recurring errors from prod (Sentry/New Relic/Workers/…) over the last N days,
