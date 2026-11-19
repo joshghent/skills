@@ -1,7 +1,7 @@
 {
   "name": "joshghent-skills",
   "version": "1.2.0",
-  "description": "Product engineering skills for Claude Code: write marketing content from your commits, review a UI's design, audit a repo for risk, keep dependencies patched from real production errors, improve search and AI-answer visibility, merge the PR queue and ship it live, run a weekly growth loop that ships one data-backed improvement, turn a plan into an importable Gantarr timeline, and make a repo easy to run locally from a fresh clone.",
+  "description": "Nine product engineering skills in one plugin: blogger (commits \u2192 marketing content), design-review (UI critique), sentinel (repo risk audit), warden (production-error-driven dependency patching), beacon (SEO + GEO / AI-answer visibility), conductor (merge the PR queue and ship it live), growth-review (weekly numbers to one shipped improvement), gantarr (plan \u2192 importable Gantt timeline), and groundwork (local dev readiness from a fresh clone).",
   "author": {
     "name": "Josh Ghent"
   },
