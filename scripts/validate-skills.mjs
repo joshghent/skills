@@ -12,6 +12,8 @@ const plugin = join(repo, "plugins", "joshghent-skills");
 const read = (path) => readFileSync(path, "utf8");
 
 const MAX_DESCRIPTION = 700;
+// Keeps the part that loads on every run small. Templates and checklists go in references/.
+const MAX_SKILL_LINES = 500;
 // Phrases Snyk's skills.sh audit rates as the skill hiding its own activity (E004).
 const BANNED = [/never (mention|reference) (claude|ai)\b/i, /do not (mention|reference) (claude|ai)\b/i];
 
@@ -67,6 +69,8 @@ for (const name of skills) {
   }
 
   const body = read(skillPath);
+  const lines = body.split("\n").length;
+  if (lines > MAX_SKILL_LINES) fail(where, `${lines} lines, limit ${MAX_SKILL_LINES}. Move templates or checklists to references/`);
   for (const pattern of BANNED) if (pattern.test(body)) fail(where, `contains banned phrase ${pattern}`);
   for (const [, ref] of body.matchAll(/`(references\/[^`]+\.md)`/g))
     if (!existsSync(join(dir, ref))) fail(where, `points at ${ref}, which does not exist`);
