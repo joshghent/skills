@@ -50,6 +50,20 @@ jobs:
           BASE_REF: ${{ github.base_ref }}
         run: npx changeset status --since="origin/$BASE_REF"
 
+  scan:
+    name: Scan skills
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+
+      # Static analysis only, no API key. Fails on high or critical findings.
+      - name: Cisco skill-scanner
+        run: uvx --from cisco-ai-skill-scanner==2.3.2 skill-scanner scan-all plugins/joshghent-skills/skills --recursive --format summary --fail-on-findings
+
   workflows:
     name: Workflows
     runs-on: ubuntu-latest

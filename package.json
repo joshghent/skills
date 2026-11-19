@@ -14,7 +14,8 @@
     "validate": "node scripts/validate-skills.mjs",
     "eval": "claude plugin eval plugins/joshghent-skills --tag trigger --runs 1 --no-publish --trust-plugin --ablation none -j 4 --max-cost-usd 2",
     "test": "node --test 'scripts/**/*.test.mjs'",
-    "routing": "node scripts/check-routing.mjs"
+    "routing": "node scripts/check-routing.mjs",
+    "scan": "uvx --from cisco-ai-skill-scanner==2.3.2 skill-scanner scan-all plugins/joshghent-skills/skills --recursive --format summary --fail-on-findings"
   },
   "packageManager": "npm@10.9.8",
   "devDependencies": {
