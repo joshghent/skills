@@ -28,6 +28,12 @@ jobs:
       - name: Validate skills, commands, manifests and evals
         run: npm run validate
 
+      - name: Unit tests
+        run: npm test
+
+      - name: Check prompts route to the right skill
+        run: npm run routing
+
       - name: Check plugin version matches package.json
         run: npm run check-plugin-version
 

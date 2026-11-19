@@ -1,0 +1,101 @@
+{
+  "beacon": {
+    "picks": [
+      "Why aren't we ranking on Google for our main keywords?",
+      "Get our site cited in ChatGPT and Perplexity answers",
+      "Fix the meta titles and structured data on the pricing page for SEO"
+    ],
+    "nearMisses": [
+      { "prompt": "How did traffic and leads do this week compared with last week?", "expect": "growth-review" },
+      { "prompt": "Critique the landing page design and its conversion", "expect": "design-review" }
+    ]
+  },
+  "blogger": {
+    "picks": [
+      "Write a blog post about the features we shipped this month",
+      "Turn the last 20 commits into a changelog entry",
+      "Draft launch posts and social snippets for the new release"
+    ],
+    "nearMisses": [
+      { "prompt": "Turn this roadmap into a timeline I can import", "expect": "gantarr" },
+      { "prompt": "Improve the SEO of our existing blog pages", "expect": "beacon" }
+    ]
+  },
+  "conductor": {
+    "picks": [
+      "Merge all the ready pull requests and make sure they deploy",
+      "Clear the PR queue and ship it to production",
+      "Run a merge train on the open PRs, newest first"
+    ],
+    "nearMisses": [
+      { "prompt": "Patch the Dependabot alerts and open a PR", "expect": "warden" },
+      { "prompt": "Check whether CI on this repo is weak or missing checks", "expect": "sentinel" }
+    ]
+  },
+  "design-review": {
+    "picks": [
+      "Review the UI of our signup flow",
+      "Our app looks AI-generated, critique the design",
+      "Do a UX and accessibility review of the dashboard"
+    ],
+    "nearMisses": [
+      { "prompt": "Audit the codebase for quality and test coverage", "expect": "sentinel" },
+      { "prompt": "Why is our organic search traffic dropping?", "expect": "beacon" }
+    ]
+  },
+  "gantarr": {
+    "picks": [
+      "Make a Gantt chart from this project plan",
+      "Turn the roadmap into a timeline I can import into Gantarr",
+      "Visualise the sprint schedule as a timeline"
+    ],
+    "nearMisses": [
+      { "prompt": "Write a release roundup post for this month", "expect": "blogger" },
+      { "prompt": "Merge the open pull requests in order", "expect": "conductor" }
+    ]
+  },
+  "groundwork": {
+    "picks": [
+      "A new engineer can't get this repo running locally",
+      "Fix the onboarding so the project runs from a fresh clone",
+      "Add seed data and a reset workflow for local development"
+    ],
+    "nearMisses": [
+      { "prompt": "Upgrade Node because it's end of life", "expect": "warden" },
+      { "prompt": "Find the code most likely to break in production", "expect": "sentinel" }
+    ]
+  },
+  "growth-review": {
+    "picks": [
+      "Run this week's growth review",
+      "How did the site do this week versus last week?",
+      "Check our weekly traffic, rankings and leads, then ship one improvement"
+    ],
+    "nearMisses": [
+      { "prompt": "Get our pages cited in AI Overviews", "expect": "beacon" },
+      { "prompt": "Write a blog post about the new feature", "expect": "blogger" }
+    ]
+  },
+  "sentinel": {
+    "picks": [
+      "Audit this repo for production risk",
+      "Do we have error monitoring, alerting and disaster recovery in place?",
+      "Review code quality and test coverage across the codebase"
+    ],
+    "nearMisses": [
+      { "prompt": "Bump our outdated dependencies safely", "expect": "warden" },
+      { "prompt": "Make the repo easy to run locally", "expect": "groundwork" }
+    ]
+  },
+  "warden": {
+    "picks": [
+      "Patch our Dependabot security alerts",
+      "Update the outdated dependencies and open one PR",
+      "Upgrade our end-of-life Node runtime"
+    ],
+    "nearMisses": [
+      { "prompt": "Merge the green pull requests and deploy them", "expect": "conductor" },
+      { "prompt": "Audit the repo's overall security and code quality", "expect": "sentinel" }
+    ]
+  }
+}

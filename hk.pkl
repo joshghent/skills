@@ -7,6 +7,10 @@ hooks {
                 glob = List("plugins/**", ".claude-plugin/**", "README.md")
                 check = "npm run validate"
             }
+            ["routing"] {
+                glob = List("plugins/joshghent-skills/skills/**", "plugins/joshghent-skills/evals/routing.json", "scripts/**")
+                check = "npm test && npm run routing"
+            }
             // Costs about $0.60 per run, so only when a skill, command or eval changes.
             ["trigger-evals"] {
                 glob = List("plugins/joshghent-skills/skills/**", "plugins/joshghent-skills/commands/**", "plugins/joshghent-skills/evals/**")

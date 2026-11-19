@@ -337,6 +337,11 @@ CI runs on every pull request:
   500 lines or fewer, its description is under 700 characters with a "Use when" clause, it has a command, a README
   row, a mention in both manifests, and a trigger eval, and it contains no
   wording Snyk's audit flags.
+- `npm run routing`: every prompt in `evals/routing.json` ranks the right skill
+  first, by word matching against the real descriptions. Each skill has three
+  prompts that should pick it and two that should pick a neighbour. It also
+  fails if two descriptions overlap too much. When it fails, fix the
+  description so it carries the words people say.
 - The skills CLI lists every skill in the repo.
 - A changeset exists for the PR.
 - actionlint and zizmor check the workflows. Every action is pinned to a commit
