@@ -94,8 +94,9 @@ anyone:
 
 - **Dependabot config.** If `.github/dependabot.yml` is missing, or skips an
   ecosystem the repo uses, add it. Cover each package manager plus
-  `github-actions` and `docker` where present, run weekly, and group minor and
-  patch updates. If alerts or security updates are off
+  `github-actions` and `docker` where present, run weekly, group minor and
+  patch updates, and set `cooldown: default-days: 7` so brand-new releases wait
+  a week before Dependabot proposes them. If alerts or security updates are off
   (`gh api repos/{owner}/{repo}/vulnerability-alerts` returns 404), say so in
   the PR. Turning them on is a repo setting for the owner.
 - **SHA-pinned actions.** Pin every third-party `uses:` to the full commit SHA

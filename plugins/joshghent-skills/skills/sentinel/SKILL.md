@@ -95,7 +95,8 @@ finding.
 - **Dependabot.** Check that alerts and security updates are on, and that
   `.github/dependabot.yml` covers every ecosystem in the repo, including
   `github-actions` and `docker`. Group minor and patch updates to keep the
-  noise down.
+  noise down, and set a `cooldown` of at least 7 days so a freshly published,
+  possibly compromised release isn't proposed the day it ships.
 
   ```bash
   gh api repos/{owner}/{repo}/vulnerability-alerts -i 2>&1 | head -1   # 204 = alerts on
