@@ -343,6 +343,9 @@ CI runs on every pull request:
   fails if two descriptions overlap too much. When it fails, fix the
   description so it carries the words people say.
 - The skills CLI lists every skill in the repo.
+- `npm run scan`: Cisco's [skill-scanner](https://github.com/cisco-ai-defense/skill-scanner)
+  checks every skill for prompt injection, data theft and unsafe commands, in
+  static mode with no API key. High or critical findings fail the build.
 - A changeset exists for the PR.
 - actionlint and zizmor check the workflows. Every action is pinned to a commit
   SHA, and Dependabot keeps those pins current.
