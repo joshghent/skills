@@ -368,7 +368,6 @@ issue, a structural change the user declined).
 The new setup commands, copied from the docs.
 ```
 
-Never reference Claude or AI in commit messages or the PR body.
 
 ## Output
 

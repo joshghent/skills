@@ -25,12 +25,24 @@ repo), then install the plugin from it:
 
 Then `/reload-plugins` (or restart Claude Code) to activate it.
 
-Prefer the [skills CLI](https://github.com/vercel-labs/skills)? Install a single
-skill from this repo into any supported agent, for example `groundwork`:
+### With the skills CLI
+
+The [skills CLI](https://github.com/vercel-labs/skills) installs into Claude
+Code, Cursor, Codex, and other agents. Its picker starts with no skills ticked,
+so pass `--skill '*'` to install them all:
+
+```sh
+npx skills add joshghent/skills --skill '*'
+```
+
+Install one skill, or list what's here first:
 
 ```sh
 npx skills add joshghent/skills --skill groundwork
+npx skills add joshghent/skills --list
 ```
+
+Add `-g` to install for your user rather than the current project.
 
 **Read the install line as `plugin@marketplace`.** The part after `@` is the
 **marketplace name** — which this repo names `joshghent-skills` — *not* the
