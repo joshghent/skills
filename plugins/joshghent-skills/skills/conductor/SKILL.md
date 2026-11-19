@@ -235,7 +235,6 @@ already configured. If a required secret is missing, name it and stop.
 - Detect the merge method and deploy platform from the repo; don't assume.
 - `security-sweep` PRs merge first and are never excluded as bot PRs, but they
   get no exemption from checks, approvals or protection.
-- Never reference Claude or AI in merge commits, tags, or workflow changes.
 
 ## Output format
 
