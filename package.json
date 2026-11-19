@@ -10,7 +10,9 @@
   "scripts": {
     "changeset": "changeset",
     "version": "changeset version && node scripts/sync-plugin-version.mjs",
-    "check-plugin-version": "node scripts/sync-plugin-version.mjs --check"
+    "check-plugin-version": "node scripts/sync-plugin-version.mjs --check",
+    "validate": "node scripts/validate-skills.mjs",
+    "eval": "claude plugin eval plugins/joshghent-skills --tag trigger --runs 1 --no-publish"
   },
   "packageManager": "npm@10.9.8",
   "devDependencies": {

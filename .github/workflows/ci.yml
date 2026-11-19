@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  skills:
+    name: Skills
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+
+      - run: npm ci
+
+      - name: Validate skills, commands, manifests and evals
+        run: npm run validate
+
+      - name: Check plugin version matches package.json
+        run: npm run check-plugin-version
+
+      - name: Check the skills CLI finds every skill
+        run: |
+          expected=$(find plugins/joshghent-skills/skills -mindepth 1 -maxdepth 1 -type d | wc -l)
+          found=$(NO_COLOR=1 npx -y skills@1.9.0 add . --list 2>&1 | grep -cE '^│    [a-z-]+$')
+          echo "skills CLI found $found of $expected skills"
+          test "$found" -eq "$expected"
+
+      - name: Require a changeset
+        if: github.event_name == 'pull_request' && github.head_ref != 'changeset-release/main'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: npx changeset status --since="origin/$BASE_REF"
+
+  workflows:
+    name: Workflows
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: actionlint
+        uses: docker://rhysd/actionlint@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 # 1.7.12
+        with:
+          args: -color
+
+      - name: zizmor
+        uses: zizmorcore/zizmor-action@45d7276c9ca790aabd705e31ca99c6185c3e76dd # v0.8.1
+        with:
+          version: 1.32.0
+          advanced-security: false
