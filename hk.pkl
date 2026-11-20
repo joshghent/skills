@@ -17,7 +17,7 @@ hooks {
             }
             // Costs about $0.60 per run, so only when a skill, command or eval changes.
             ["trigger-evals"] {
-                glob = List("plugins/joshghent-skills/skills/**", "plugins/joshghent-skills/commands/**", "plugins/joshghent-skills/evals/**")
+                glob = List("plugins/joshghent-skills/skills/**", "plugins/joshghent-skills/evals/**")
                 exclude = List("plugins/joshghent-skills/evals/results/**")
                 check = "npm run eval"
                 depends = List("validate")

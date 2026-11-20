@@ -1,6 +1,7 @@
 ---
 name: groundwork
 description: Local development readiness for a repo. Walks the fresh-clone path for real (install, secrets, local services, migrate and seed, run, test, build, reset), scores each step, diffs the code against docs, env examples, Compose and CI, then fixes the gaps in one PR with a before/after scorecard. Use when asked to make a repo easy to run locally, fix onboarding or setup, add seed data or a reset workflow, or check whether a new engineer or agent could get the project running.
+argument-hint: '[optional: "audit only" to report without changing anything, or an app/package to focus on]'
 ---
 
 # Groundwork: Local Development Readiness
