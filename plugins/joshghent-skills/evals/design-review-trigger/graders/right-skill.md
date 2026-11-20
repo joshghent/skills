@@ -1,8 +1,5 @@
 ---
-type: llm
-weight: 1
-focus: trace
+type: tool_used
+tool: Skill
+input_match: "joshghent-skills:design-review\""
 ---
-
-The agent loaded the `design-review` skill to handle this request. Fail if it loaded
-a different skill instead (for example `beacon`) or did not load a skill.

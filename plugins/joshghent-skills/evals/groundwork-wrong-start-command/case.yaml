@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: groundwork-wrong-start-command
+tags: [behaviour, groundwork]
+context:
+  scaffold_script: fixture.sh

@@ -22,6 +22,13 @@ hooks {
                 check = "npm run eval"
                 depends = List("validate")
             }
+            // Only the changed skill's behaviour cases: about $1 per skill.
+            ["behaviour-evals"] {
+                glob = List("plugins/joshghent-skills/skills/**", "plugins/joshghent-skills/evals/**")
+                exclude = List("plugins/joshghent-skills/evals/results/**")
+                check = "scripts/eval-changed-behaviour.sh {{files}}"
+                depends = List("trigger-evals")
+            }
         }
     }
 }
