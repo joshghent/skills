@@ -1,6 +1,6 @@
 {
   "name": "joshghent-skills",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Nine product engineering skills in one plugin: blogger (commits \u2192 marketing content), design-review (UI critique), sentinel (repo risk audit), warden (production-error-driven dependency patching), beacon (SEO + GEO / AI-answer visibility), conductor (merge the PR queue and ship it live), growth-review (weekly numbers to one shipped improvement), gantarr (plan \u2192 importable Gantt timeline), and groundwork (local dev readiness from a fresh clone).",
   "author": {
     "name": "Josh Ghent"
