@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# A small app whose README names a start command that doesn't exist. Only
-# running the documented steps shows the mismatch.
+# A small app whose README and scripts agree, but whose config file has a
+# trailing comma. It looks fine on a skim and crashes the moment it runs.
 set -euo pipefail
+mkdir -p config
 cat > README.md <<'MD'
 # Shop
 
@@ -10,17 +11,26 @@ cat > README.md <<'MD'
 1. `npm install`
 2. `npm start`
 
-The app prints "ready" when it's up.
+The app prints "ready on port 3000" when it's up.
 MD
 cat > package.json <<'JSON'
 {
   "name": "shop",
   "version": "1.0.0",
   "private": true,
-  "scripts": { "dev": "node app.js", "test": "node --test" }
+  "scripts": { "start": "node app.js", "test": "node --test" }
 }
 JSON
-echo 'console.log("ready");' > app.js
+cat > config/default.json <<'JSON'
+{
+  "port": 3000,
+  "currency": "GBP",
+}
+JSON
+cat > app.js <<'JS'
+const config = require("./config/default.json");
+console.log(`ready on port ${config.port}`);
+JS
 git init -q -b main
 git -c user.name=Shop -c user.email=shop@example.com add -A
 git -c user.name=Shop -c user.email=shop@example.com commit -qm "initial"

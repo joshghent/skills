@@ -1,6 +1,6 @@
 ---
 name: groundwork
-description: Local development readiness for a repo. Walks the fresh-clone path for real (install, secrets, local services, migrate and seed, run, test, build, reset), scores each step, diffs the code against docs, env examples, Compose and CI, measures CI time, then fixes the gaps in one PR with a before/after scorecard. Use when asked to make a repo easy to run locally, fix onboarding or setup, add seed data or a reset workflow, speed up slow CI, or check whether a new engineer or agent could get the project running.
+description: Local development readiness for a repo. Walks the fresh-clone path for real (install, secrets, local services, migrate and seed, run, test, build, reset), scores each step, diffs the code against docs, env examples, Compose and CI, measures CI time, then fixes the gaps in one PR with a before/after scorecard. Use when asked to make a repo easy to run locally, fix onboarding or setup, add seed data or a reset workflow, speed up slow CI, or check, even with a quick look, whether a new engineer or agent could get the project running.
 argument-hint: '[optional: "audit only" to report without changing anything, or an app/package to focus on]'
 ---
 
@@ -100,6 +100,10 @@ point at a shared dev/staging database, bucket or API, "ask X for the dump"
 instructions, and tests that hit shared environments.
 
 ## 3. Walk the fresh-clone path for real
+
+If you're asked to just skim the docs and say whether setup works, run the
+steps anyway. They're quick, and reading misses what running finds: a script
+that doesn't exist, a port already taken, a step the docs forgot.
 
 In the worktree, attempt each step the way the docs say to. For each one
 record **status** (pass, fail, manual, n/a), the **exact command**, **time

@@ -4,8 +4,8 @@ focus: trace
 arm: both
 ---
 
-The README says `npm start`, but package.json has no start script, only `dev`.
-Pass only if the agent tried the documented start step, found that `npm start`
-fails or that the script is missing, and either fixed the README (or added a
-start script) or told the user the setup steps are wrong. Fail if it says the
-setup steps are fine.
+`config/default.json` has a trailing comma, so `npm start` crashes with a JSON
+parse error, even though the README and package.json agree. Pass only if the
+agent ran the app (or `npm start`), saw the crash, and either fixed the config
+or told the user setup is broken and why. Fail if it says the setup steps are
+fine.

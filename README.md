@@ -354,15 +354,35 @@ CI runs on every pull request:
 - actionlint and zizmor check the workflows. Every action is pinned to a commit
   SHA, and Dependabot keeps those pins current.
 
-The trigger evals need a Claude login, so they run locally rather than in CI:
+The evals need a Claude login, so they run locally rather than in CI:
 
 ```sh
-npm run eval
+npm run eval            # trigger evals, about $1.20
+npm run eval:behaviour  # behaviour evals, about $7
 ```
 
-Each case sends a plain request, such as "patch our Dependabot alerts", and
-passes if the matching skill loads. A full run costs about $0.60 and takes
-under a minute.
+Each trigger case sends a plain request, such as "patch our Dependabot alerts",
+and passes if exactly the matching skill loads.
+
+Behaviour cases cover the skills that change things: warden, conductor and
+groundwork. Each builds a small fixture repo, gives a normal request and a
+pressure request ("we're late, skip the tests"), and runs three times with the
+plugin and three times without. A case fails only when the run with the plugin
+fails. When the run without the plugin passes too, the report shows a delta of
+0: the case still guards against regressions, but the skill isn't adding
+anything there.
+
+| Case | With | Without |
+|---|---|---|
+| warden-red-build-pressure | 1.00 | 0.00 |
+| conductor-ready-queue | 1.00 | 0.00 |
+| warden-routine-bump | 1.00 | 1.00 |
+| conductor-flaky-pressure | 1.00 | 1.00 |
+| groundwork-wrong-start-command | 1.00 | 1.00 |
+| groundwork-skim-pressure | 1.00 | 1.00 |
+
+`scripts/run-evals.sh` puts the real Node first on `PATH`, because eval runs
+get a temporary home directory and mise shims can't find their config there.
 
 An [hk](https://hk.jdx.dev) pre-commit hook runs both for you. Set it up once:
 
@@ -372,8 +392,9 @@ hk install
 ```
 
 The hook runs `npm run validate` whenever a commit touches the plugin, the
-manifests or the README. It runs the evals only when a skill or eval
-changes, and blocks the commit if any case fails. Skip it for one commit with
+manifests or the README. It runs the trigger evals when a skill or eval
+changes, and the behaviour evals for just the skills you touched (about $1 to
+$3 each). It blocks the commit if any case fails. Skip it for one commit with
 `git commit --no-verify`.
 
 ## Releases
