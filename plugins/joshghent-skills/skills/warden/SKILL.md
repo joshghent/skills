@@ -1,6 +1,7 @@
 ---
 name: warden
 description: Dependency and security maintenance in one verified PR. Ranks work by live production errors, patches security alerts first, bumps outdated deps, upgrades end-of-life runtimes, adds Dependabot config and pins actions to SHAs. A security mode fixes or triages every open high and critical GitHub alert across a repo or org. Use when asked to patch vulnerabilities, clear Dependabot alerts, update dependencies, upgrade an end-of-life runtime, pin actions, or do routine dependency maintenance.
+argument-hint: [optional: "security" for the initial high/critical alert PR, or "analysis only" to skip opening a PR]
 ---
 
 # Warden: Dependency and Security Maintenance

@@ -25,7 +25,7 @@ jobs:
 
       - run: npm ci
 
-      - name: Validate skills, commands, manifests and evals
+      - name: Validate skills, manifests and evals
         run: npm run validate
 
       - name: Unit tests

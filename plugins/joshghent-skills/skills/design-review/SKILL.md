@@ -1,6 +1,7 @@
 ---
 name: design-review
 description: Expert design review of a UI for conversion, UI/UX craft, accessibility, performance, and SEO. Judges against Apple, Financial Times, and OpenAI/ChatGPT design standards and strips AI design slop. Use when the user wants a design-review, UI/UX audit, conversion review, or to make an interface stop looking AI-generated.
+argument-hint: [url, route, file/dir, or area to focus on]
 ---
 
 # Design Review: Conversion-Grade UI/UX Critique

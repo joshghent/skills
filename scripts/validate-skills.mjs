@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Checks that every skill is wired up the same way, so a new or edited skill
-// can't drift from the commands, manifests, README, and evals.
+// can't drift from the manifests, README, and evals.
 // Exits 1 and lists every problem found.
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
@@ -36,10 +36,10 @@ const skills = readdirSync(join(plugin, "skills"), { withFileTypes: true })
   .filter((entry) => entry.isDirectory())
   .map((entry) => entry.name)
   .sort();
-const commands = readdirSync(join(plugin, "commands"))
-  .filter((file) => file.endsWith(".md"))
-  .map((file) => file.slice(0, -3))
-  .sort();
+const commandsDir = join(plugin, "commands");
+const commands = existsSync(commandsDir)
+  ? readdirSync(commandsDir).filter((file) => file.endsWith(".md")).map((file) => file.slice(0, -3))
+  : [];
 
 const readme = read(join(repo, "README.md"));
 const pluginDescription = JSON.parse(read(join(plugin, ".claude-plugin", "plugin.json"))).description;
@@ -75,7 +75,6 @@ for (const name of skills) {
   for (const [, ref] of body.matchAll(/`(references\/[^`]+\.md)`/g))
     if (!existsSync(join(dir, ref))) fail(where, `points at ${ref}, which does not exist`);
 
-  if (!commands.includes(name)) fail(where, `no commands/${name}.md`);
   if (!readme.includes(`| \`${name}\` |`)) fail("README.md", `"What's inside" table has no row for ${name}`);
   if (!pluginDescription.includes(name)) fail("plugin.json", `description does not mention ${name}`);
   if (!marketplaceDescription.includes(name)) fail("marketplace.json", `description does not mention ${name}`);
@@ -83,16 +82,10 @@ for (const name of skills) {
     fail(where, `no trigger eval at evals/${name}-trigger/prompt.md`);
 }
 
-for (const name of commands) {
-  const path = join(plugin, "commands", `${name}.md`);
-  const where = `commands/${name}.md`;
-  if (!skills.includes(name)) fail(where, "has no matching skill");
-  const meta = frontmatter(path);
-  if (!meta?.description) fail(where, "no description");
-  const text = read(path);
-  if (!text.includes(`\`${name}\` skill`)) fail(where, `does not hand off to the \`${name}\` skill`);
-  if (!text.includes("$ARGUMENTS")) fail(where, "does not pass $ARGUMENTS");
-}
+// A command with a skill's name hides the skill: the Skill tool loads the
+// command and the agent never reads SKILL.md. Skills are slash commands already.
+for (const name of commands.filter((command) => skills.includes(command)))
+  fail(`commands/${name}.md`, `shares a name with skills/${name}, so the Skill tool loads it instead of SKILL.md`);
 
 if (problems.length) {
   console.error(problems.map((problem) => `- ${problem}`).join("\n"));

@@ -1,6 +1,7 @@
 ---
 name: sentinel
 description: Whole-repo audit ranked by production risk. Scores a capability baseline (observability, error monitoring, testing, CI/CD, previews, alerting, OIDC deploys, disaster recovery, security remediation), checks supply-chain hygiene (Dependabot, SHA-pinned actions, vendor security notices), then reviews quality, coverage and AI-agent fragility. Use when asked to audit a repo, review code quality, test coverage, weak or missing CI checks, security posture, or check whether agents can safely maintain the codebase.
+argument-hint: [optional path or area to focus on]
 ---
 
 # Sentinel: Whole-Codebase Quality and Coverage Review

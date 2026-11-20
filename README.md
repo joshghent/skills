@@ -7,7 +7,7 @@ content from your commits, review a UI's design, audit a repo for risk, keep
 dependencies patched (driven by real production errors), review a site's search
 and AI-answer visibility, merge the PR queue and ship it live, run a weekly
 growth loop that ships one improvement, turn a plan into an importable
-Gantt timeline, and make a repo easy to run locally from a fresh clone. Each ships a slash command, so you can trigger
+Gantt timeline, and make a repo easy to run locally from a fresh clone. Each skill is also a slash command, so you can trigger
 it directly or let Claude reach for it when a request matches.
 
 ## Install
@@ -315,7 +315,6 @@ cp -r plugins/joshghent-skills/skills/warden ~/.claude/skills/
 plugins/
   joshghent-skills/
     .claude-plugin/plugin.json           # plugin metadata
-    commands/<skill>.md                  # one /<skill> slash command per skill
     skills/<skill>/SKILL.md              # each skill's full process
     skills/<skill>/references/*.md       # templates a skill reads only when needed
     evals/<skill>-trigger/               # checks that a plain request picks the right skill
@@ -323,9 +322,11 @@ scripts/validate-skills.mjs              # the checks CI runs on every skill
 ```
 
 Everything ships in the one `joshghent-skills` plugin so install stays short (one
-or two commands). To add a skill: drop `commands/<name>.md` and `skills/<name>/SKILL.md`
-into `plugins/joshghent-skills/`. Keep the command name and skill name identical
-(a single word where it reads well) so the dev UX stays predictable. Then add
+or two commands). To add a skill, drop `skills/<name>/SKILL.md` into
+`plugins/joshghent-skills/`, with an `argument-hint` in its frontmatter if it
+takes arguments. Claude Code makes it the `/<name>` slash command. Don't add a
+`commands/<name>.md` as well: a command with a skill's name hides the skill,
+and the agent never reads `SKILL.md`. Then add
 `evals/<name>-trigger/`, a row in the table above, and the name in both
 manifest descriptions. `npm run validate` tells you what's missing.
 
@@ -334,7 +335,7 @@ manifest descriptions. `npm run validate` tells you what's missing.
 CI runs on every pull request:
 
 - `npm run validate`: each skill's name matches its folder, its `SKILL.md` is
-  500 lines or fewer, its description is under 700 characters with a "Use when" clause, it has a command, a README
+  500 lines or fewer, its description is under 700 characters with a "Use when" clause, no command shares its name, it has a README
   row, a mention in both manifests, and a trigger eval, and it contains no
   wording Snyk's audit flags.
 - `npm run routing`: every prompt in `evals/routing.json` ranks the right skill
@@ -368,7 +369,7 @@ hk install
 ```
 
 The hook runs `npm run validate` whenever a commit touches the plugin, the
-manifests or the README. It runs the evals only when a skill, command or eval
+manifests or the README. It runs the evals only when a skill or eval
 changes, and blocks the commit if any case fails. Skip it for one commit with
 `git commit --no-verify`.
 
