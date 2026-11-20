@@ -276,8 +276,11 @@ code reads but `.env.example` doesn't declare, services the app connects to that
 Compose doesn't provide, runtime pins that disagree with CI, broken or
 undocumented scripts, and anything pointing at a shared dev database. It also
 checks delivery: test coverage (is there a command, does CI enforce it, which
-critical paths are untested) and whether deploys are automated and gated on CI
-rather than run from someone's laptop.
+critical paths are untested), whether deploys are automated and gated on CI
+rather than run from someone's laptop, and how long CI takes. It measures CI
+time from recent runs and finds where it goes: missing dependency caches,
+repeated setup, jobs that could run in parallel, unsharded test suites, no
+path filters, and stale runs that never get cancelled.
 
 Then it fixes them. Safe changes (docs, `.env.example`, runtime pins, broken
 scripts) go straight in. Structural ones (Compose services, deterministic seed
