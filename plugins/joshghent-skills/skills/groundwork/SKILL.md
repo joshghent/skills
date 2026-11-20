@@ -1,6 +1,6 @@
 ---
 name: groundwork
-description: Local development readiness for a repo. Walks the fresh-clone path for real (install, secrets, local services, migrate and seed, run, test, build, reset), scores each step, diffs the code against docs, env examples, Compose and CI, then fixes the gaps in one PR with a before/after scorecard. Use when asked to make a repo easy to run locally, fix onboarding or setup, add seed data or a reset workflow, or check whether a new engineer or agent could get the project running.
+description: Local development readiness for a repo. Walks the fresh-clone path for real (install, secrets, local services, migrate and seed, run, test, build, reset), scores each step, diffs the code against docs, env examples, Compose and CI, measures CI time, then fixes the gaps in one PR with a before/after scorecard. Use when asked to make a repo easy to run locally, fix onboarding or setup, add seed data or a reset workflow, speed up slow CI, or check whether a new engineer or agent could get the project running.
 argument-hint: '[optional: "audit only" to report without changing anything, or an app/package to focus on]'
 ---
 
@@ -166,6 +166,37 @@ production, without one person's laptop in the loop. Check:
   rollback is documented (a redeploy of the previous version, a platform
   rollback command).
 
+### CI time
+
+Slow CI is slow feedback for every engineer and agent on every push. Measure
+it from recent history rather than guessing:
+
+```bash
+gh run list --branch main --status success --limit 20 \
+  --json workflowName,databaseId,createdAt,updatedAt
+gh run view <id> --json jobs \
+  --jq '.jobs[] | {name, started: .startedAt, done: .completedAt}'
+```
+
+Record the median wall-clock time for a PR to go green, the slowest job, and
+the slowest steps inside it. Then look for where the time goes:
+
+- **No dependency cache.** `setup-node`/`setup-python`/`setup-go` without
+  `cache:`, or a fresh `npm install` instead of `npm ci` against a lockfile.
+- **Repeated setup.** Several jobs each install the same dependencies or build
+  the same artifact, instead of building once and passing it on.
+- **Serial jobs that could run in parallel.** Lint, typecheck and unit tests
+  chained with `needs:` when none depends on the others.
+- **One long test job.** A suite over a few minutes that could be split across
+  runners (`--shard` in Vitest, Jest and Playwright, `pytest-xdist`).
+- **Running everything on every change.** No `paths` filters, so a README edit
+  runs the full suite. In a monorepo, no affected-only runs (`turbo --filter`,
+  `nx affected`).
+- **Stale runs pile up.** No `concurrency` group with `cancel-in-progress`, so
+  each push to a PR queues another full run.
+- **Slow image builds.** Docker builds with no layer cache
+  (`cache-from: type=gha`), or an image rebuilt in CI that could be pulled.
+
 Read config and workflow history only. Never trigger a deploy, run a pipeline
 against a real environment, or read production secrets as part of this check.
 
@@ -192,6 +223,7 @@ show the delta so repeated runs track progress. Present to the user:
 |-------|--------|----------|
 | Coverage | 62% lines, not enforced | `src/billing/` 8%, no threshold in CI |
 | Deploys | manual | README: "run `vercel --prod` after merging" |
+| CI time | 14 min median | `test` job 11 min, no dependency cache, no sharding |
 
 ## Gaps
 Ranked, each with evidence (file:line, command output) and the proposed fix.
@@ -303,6 +335,19 @@ esac
   trigger, but don't add deploy secrets or touch platform settings. Those need
   a human, so list them under "Still manual".
 
+### CI time
+
+- **Safe:** add dependency caching to the setup actions, switch to `npm ci` (or
+  the package manager's frozen-lockfile install), add a `concurrency` group with
+  `cancel-in-progress: true` for PR workflows, and drop `needs:` between jobs
+  that don't depend on each other.
+- **Structural:** test sharding, `paths` filters, affected-only runs in a
+  monorepo, merging or splitting jobs, and larger runners (they cost money).
+  `paths` filters can hide a required check, so confirm branch protection
+  still gets a result for every PR.
+- Report before and after times from real runs. Don't claim a saving you
+  haven't measured.
+
 Avoid unnecessary infrastructure or abstraction. If a fix needs more code than
 the gap costs, record it as a recommendation instead.
 
@@ -355,7 +400,8 @@ Local readiness 5/10 → 9/10. One line on the biggest change.
 |---|------|--------|-------|---------|
 
 ## Delivery
-Coverage before/after and whether it's enforced; how deploys are triggered.
+Coverage before/after and whether it's enforced; how deploys are triggered;
+CI time before/after.
 Critical paths still lacking tests, ranked.
 
 ## Changes
