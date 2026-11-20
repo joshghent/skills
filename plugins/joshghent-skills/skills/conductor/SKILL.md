@@ -1,7 +1,7 @@
 ---
 name: conductor
 description: Safely merge all ready open pull requests in reverse chronological order (newest first), one at a time, each verified green by CI, updating and re-checking the rest after every merge — then confirm the CD pipeline actually deploys the apps live and smoke-check them. Detects the repo's merge method and deploy platform (GitHub Actions, Cloudflare Workers/Pages, Vercel, etc.), respects branch protection, and never force-merges or bypasses failing checks. Use when asked to merge all PRs, clear the PR queue, run a merge train, batch-merge and deploy, ship what's ready to production, or make sure CI actually ships the app live.
-argument-hint: [optional: repo, base branch, or "dry run" to preview without merging]
+argument-hint: '[optional: repo, base branch, or "dry run" to preview without merging]'
 ---
 
 # Conductor: Merge the Queue, Ship It Live

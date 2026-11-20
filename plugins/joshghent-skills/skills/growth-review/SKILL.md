@@ -1,7 +1,7 @@
 ---
 name: growth-review
 description: Runs a project's weekly growth loop end to end — health-check the site and its tracking, pull the week's search, analytics, and lead numbers, compare against last week, log a dated snapshot, spot-check target SERPs and one competitor, then implement the single highest-leverage improvement. Use when the user asks for a weekly growth review, a growth check-in, "how did we do this week", to review traffic/rankings/leads on a cadence, or to set up a repeatable growth loop for a project.
-argument-hint: [project, domain, or area to focus this week's change on]
+argument-hint: '[project, domain, or area to focus this week''s change on]'
 ---
 
 # Growth Review

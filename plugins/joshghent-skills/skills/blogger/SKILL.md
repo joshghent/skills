@@ -1,7 +1,7 @@
 ---
 name: blogger
 description: Analyse recent commits, identify user-facing product features, and write dated markdown blog posts, changelog entries, and social snippets in the site's existing voice, without inventing features. Use when asked to write a blog post, launch note, changelog, or release roundup from recent work, or to turn commits into marketing content.
-argument-hint: [commit range, e.g. "last 20 commits" or "since v1.2.0"]
+argument-hint: '[commit range, e.g. "last 20 commits" or "since v1.2.0"]'
 ---
 
 # Blogger
