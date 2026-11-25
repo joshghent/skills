@@ -69,7 +69,7 @@ for (const name of skills) {
   }
 
   const body = read(skillPath);
-  const lines = body.split("\n").length;
+  const lines = body.trimEnd().split("\n").length;
   if (lines > MAX_SKILL_LINES) fail(where, `${lines} lines, limit ${MAX_SKILL_LINES}. Move templates or checklists to references/`);
   for (const pattern of BANNED) if (pattern.test(body)) fail(where, `contains banned phrase ${pattern}`);
   for (const [, ref] of body.matchAll(/`(references\/[^`]+\.md)`/g))

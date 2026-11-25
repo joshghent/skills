@@ -1,5 +1,5 @@
 ---
 type: tool_used
 tool: Skill
-input_match: "joshghent-skills:blogger\""
+input_match: "\"(joshghent-skills:)?blogger\""
 ---

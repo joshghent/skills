@@ -10,12 +10,13 @@ all_skills=$(ls plugins/joshghent-skills/skills)
 skills=$(for file in "$@"; do
   for skill in $all_skills; do
     case "$file" in
+      "$evals"/*-trigger/*) ;;
       plugins/joshghent-skills/skills/"$skill"/* | "$evals"/"$skill"-*) echo "$skill" ;;
     esac
   done
 done | sort -u)
 for skill in $skills; do
-  if grep -lqs "tags: \[behaviour, $skill\]" "$evals"/"$skill"-*/case.yaml; then
+  if ls "$evals"/"$skill"-*/case.yaml >/dev/null 2>&1; then
     echo "behaviour evals: $skill"
     "$(dirname "$0")/run-evals.sh" --tag behaviour --case "$skill-*" --runs 3 --scaffold \
       --allow-tools Bash Edit Write -j 4 --max-cost-usd 3
