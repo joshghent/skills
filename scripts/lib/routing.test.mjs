@@ -44,3 +44,16 @@ test("a plural of an -ing word matches its singular", () => {
   ];
   assert.equal(rankSkills("why is our ranking low", [...catalog].reverse())[0], "seo");
 });
+
+test("a short word matches its plural", () => {
+  const catalog = [
+    { name: "coder", description: "write codes" },
+    { name: "reviewer", description: "review the pages of a site" },
+  ];
+  assert.equal(rankSkills("fix my page", catalog)[0], "reviewer");
+  assert.equal(rankSkills("fix the code", [...catalog].reverse())[0], "coder");
+});
+
+test("a prompt that shares no words with any description ranks no skill", () => {
+  assert.equal(rankSkills("zzz qqq", skills)[0], undefined);
+});
