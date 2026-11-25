@@ -13,7 +13,7 @@ import { descriptionOverlap, rankSkills } from "./lib/routing.mjs";
 const MAX_OVERLAP = 0.2;
 
 const plugin = join(dirname(fileURLToPath(import.meta.url)), "..", "plugins", "joshghent-skills");
-const skills = readdirSync(join(plugin, "skills")).map((name) => {
+const skills = readdirSync(join(plugin, "skills"), { withFileTypes: true }).filter((entry) => entry.isDirectory()).map(({ name }) => {
   const skill = readFileSync(join(plugin, "skills", name, "SKILL.md"), "utf8");
   return { name, description: skill.match(/^description:\s*(.*)$/m)[1] };
 });
@@ -26,7 +26,7 @@ for (const [skill, { picks, nearMisses }] of Object.entries(cases)) {
   for (const { prompt, expect } of prompts) {
     checked++;
     const ranked = rankSkills(prompt, skills);
-    if (ranked[0] !== expect) problems.push(`"${prompt}" ranked ${ranked[0]} first, expected ${expect} (at #${ranked.indexOf(expect) + 1})`);
+    if (ranked[0] !== expect) problems.push(`"${prompt}" ranked ${ranked[0] ?? "no skill"} first, expected ${expect} (${ranked.includes(expect) ? `at #${ranked.indexOf(expect) + 1}` : "no shared words"})`);
   }
 }
 

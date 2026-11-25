@@ -3,13 +3,11 @@
 // but it catches descriptions missing the words users say.
 
 // ponytail: suffix stripping, not a real stemmer. Swap in Porter if word forms start missing.
-const stem = (word) =>
-  word.length <= 4
-    ? word
-    : word
-        .replace(/ies$/, "y")
-        .replace(/s$/, "")
-        .replace(/(ing|ed|e)$/, "");
+const singular = (word) => (word.length <= 3 ? word : word.replace(/ies$/, "y").replace(/s$/, ""));
+const stem = (word) => {
+  const base = singular(word);
+  return base.length <= 4 ? base : base.replace(/(ing|ed|e)$/, "");
+};
 
 const words = (text) => (text.toLowerCase().match(/[a-z0-9]+/g) ?? []).map(stem);
 
@@ -37,7 +35,10 @@ export function rankSkills(prompt, skills) {
   const idf = inverseFrequency(skills);
   const promptVector = weights(prompt, idf);
   const score = new Map(skills.map((skill) => [skill.name, cosine(promptVector, weights(skill.description, idf))]));
-  return [...skills].sort((a, b) => score.get(b.name) - score.get(a.name)).map((skill) => skill.name);
+  return skills
+    .filter((skill) => score.get(skill.name) > 0)
+    .sort((a, b) => score.get(b.name) - score.get(a.name))
+    .map((skill) => skill.name);
 }
 
 export function descriptionOverlap(nameA, nameB, skills) {
