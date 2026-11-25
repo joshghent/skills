@@ -1,6 +1,7 @@
 ---
 name: gantarr
 description: Turn a plan, roadmap, or the current conversation into a Gantarr timeline — a complete, valid GanttProject JSON file you can import at gantarr.joshghent.com to render a Gantt chart. Use when the user wants to visualise a project plan, roadmap, sprint schedule, or sequence of work as a timeline, or asks for "Gantarr JSON", a "Gantt chart", or to "import this plan into Gantarr".
+argument-hint: '[plan file, roadmap, or "the plan above" — plus an optional start date]'
 ---
 
 # Gantarr: Plan → Importable Timeline JSON

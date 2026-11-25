@@ -1,0 +1,34 @@
+amends "package://github.com/jdx/hk/releases/download/v2.13.0/hk@2.13.0#/Config.pkl"
+
+hooks {
+    ["pre-commit"] {
+        steps {
+            ["validate"] {
+                glob = List("plugins/**", ".claude-plugin/**", "README.md")
+                check = "npm run validate"
+            }
+            ["scan"] {
+                glob = List("plugins/joshghent-skills/skills/**")
+                check = "npm run scan"
+            }
+            ["routing"] {
+                glob = List("plugins/joshghent-skills/skills/**", "plugins/joshghent-skills/evals/routing.json", "scripts/**")
+                check = "npm test && npm run routing"
+            }
+            // Costs about $0.60 per run, so only when a skill, command or eval changes.
+            ["trigger-evals"] {
+                glob = List("plugins/joshghent-skills/skills/**", "plugins/joshghent-skills/evals/**")
+                exclude = List("plugins/joshghent-skills/evals/results/**")
+                check = "npm run eval"
+                depends = List("validate")
+            }
+            // Only the changed skill's behaviour cases: about $1 per skill.
+            ["behaviour-evals"] {
+                glob = List("plugins/joshghent-skills/skills/**", "plugins/joshghent-skills/evals/**")
+                exclude = List("plugins/joshghent-skills/evals/results/**")
+                check = "scripts/eval-changed-behaviour.sh {{files}}"
+                depends = List("trigger-evals")
+            }
+        }
+    }
+}

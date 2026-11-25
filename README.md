@@ -7,7 +7,7 @@ content from your commits, review a UI's design, audit a repo for risk, keep
 dependencies patched (driven by real production errors), review a site's search
 and AI-answer visibility, merge the PR queue and ship it live, run a weekly
 growth loop that ships one improvement, turn a plan into an importable
-Gantt timeline, and make a repo easy to run locally from a fresh clone. Each ships a slash command, so you can trigger
+Gantt timeline, and make a repo easy to run locally from a fresh clone. Each skill is also a slash command, so you can trigger
 it directly or let Claude reach for it when a request matches.
 
 ## Install
@@ -24,6 +24,25 @@ repo), then install the plugin from it:
 ```
 
 Then `/reload-plugins` (or restart Claude Code) to activate it.
+
+### With the skills CLI
+
+The [skills CLI](https://github.com/vercel-labs/skills) installs into Claude
+Code, Cursor, Codex, and other agents. Its picker starts with no skills ticked,
+so pass `--skill '*'` to install them all:
+
+```sh
+npx skills add joshghent/skills --skill '*'
+```
+
+Install one skill, or list what's here first:
+
+```sh
+npx skills add joshghent/skills --skill groundwork
+npx skills add joshghent/skills --list
+```
+
+Add `-g` to install for your user rather than the current project.
 
 **Read the install line as `plugin@marketplace`.** The part after `@` is the
 **marketplace name** — which this repo names `joshghent-skills` — *not* the
@@ -66,7 +85,7 @@ most two commands. Update later with:
 |-------|---------|--------------|
 | `blogger` | `/blogger` | Turns shipped commits into dated blog posts, changelog entries, and social snippets in your site's voice. |
 | `design-review` | `/design-review` | Reviews a UI for conversion, UI/UX, accessibility, performance, and SEO against Apple/FT/OpenAI standards, and flags AI design slop. |
-| `sentinel` | `/sentinel` | Audits the whole repo for quality, coverage, CI, security, and AI-agent fragility, ranked by production risk. |
+| `sentinel` | `/sentinel` | Scores a capability baseline and supply-chain hygiene, then audits the whole repo for quality, coverage, CI, security, and AI-agent fragility, ranked by production risk. |
 | `warden` | `/warden` | Pulls production errors (Sentry, New Relic, Cloudflare Workers…), then patches security alerts and bumps dependencies safely, verified by your own build and tests, in one clean PR. |
 | `beacon` | `/beacon` | Reviews a site's SEO and GEO (AI-answer) visibility from GSC, Ahrefs, and PostHog data, then optimises pages, metadata, and structured data. |
 | `conductor` | `/conductor` | Merges all ready open PRs in reverse chronological order, each verified green, then confirms CI ships the apps live. |
@@ -116,6 +135,14 @@ the code most likely to break, rot, or quietly ship defects: missing tests on
 critical paths, weak CI, duplicated concepts, dead code, silent fallbacks, and
 patterns that make a repo hard for the next agent to work in safely.
 
+It starts with a capability baseline, scoring each of these 0, 1, or 2 with
+evidence: centralised observability, error monitoring, automated testing,
+CI/CD, preview environments, production alerting, OIDC deployment auth,
+disaster recovery tests, and security remediation. Then it checks the supply
+chain. Is Dependabot on and does `dependabot.yml` cover every ecosystem? Are
+third-party actions pinned to commit SHAs? Who hears about security issues in
+each vendor the code depends on?
+
 It runs the project's own build, test, typecheck, and lint commands where it
 can, then ranks findings by production and maintenance risk into a fix plan.
 
@@ -132,8 +159,9 @@ Workers, Vercel, Supabase, Datadog — read-only) so real impact drives priority
 then detects the package manager from the lockfile, fixes known vulnerabilities
 before routine bumps, prefers lockfile-only overrides for transitive issues,
 isolates breaking major bumps, and verifies every change with the project's own
-build and tests before opening a PR. The PR ships with a production-errors
-baseline, and it records what it skipped and why.
+build and tests before opening a PR. It also adds or extends
+`dependabot.yml` and pins third-party actions to commit SHAs. The PR ships with
+a production-errors baseline, and it records what it skipped and why.
 
 `/warden security` runs an initial security PR instead. It asks whether to cover
 the current repo, a list of repos, or an org, collects every open high and
@@ -260,8 +288,11 @@ code reads but `.env.example` doesn't declare, services the app connects to that
 Compose doesn't provide, runtime pins that disagree with CI, broken or
 undocumented scripts, and anything pointing at a shared dev database. It also
 checks delivery: test coverage (is there a command, does CI enforce it, which
-critical paths are untested) and whether deploys are automated and gated on CI
-rather than run from someone's laptop.
+critical paths are untested), whether deploys are automated and gated on CI
+rather than run from someone's laptop, and how long CI takes. It measures CI
+time from recent runs and finds where it goes: missing dependency caches,
+repeated setup, jobs that could run in parallel, unsharded test suites, no
+path filters, and stale runs that never get cancelled.
 
 Then it fixes them. Safe changes (docs, `.env.example`, runtime pins, broken
 scripts) go straight in. Structural ones (Compose services, deterministic seed
@@ -275,6 +306,9 @@ all ten steps from clean, and opens one PR with the before/after scorecard.
 /groundwork audit only
 /groundwork apps/api
 ```
+
+Read the story behind it in
+[/groundwork: a skill that makes any repo runnable from a fresh clone](https://joshghent.com/blog/groundwork).
 
 ## Manual install
 
@@ -296,14 +330,84 @@ cp -r plugins/joshghent-skills/skills/warden ~/.claude/skills/
 plugins/
   joshghent-skills/
     .claude-plugin/plugin.json           # plugin metadata
-    commands/<skill>.md                  # one /<skill> slash command per skill
     skills/<skill>/SKILL.md              # each skill's full process
+    skills/<skill>/references/*.md       # templates a skill reads only when needed
+    evals/<skill>-trigger/               # checks that a plain request picks the right skill
+scripts/validate-skills.mjs              # the checks CI runs on every skill
 ```
 
 Everything ships in the one `joshghent-skills` plugin so install stays short (one
-or two commands). To add a skill: drop `commands/<name>.md` and `skills/<name>/SKILL.md`
-into `plugins/joshghent-skills/`. Keep the command name and skill name identical
-(a single word where it reads well) so the dev UX stays predictable.
+or two commands). To add a skill, drop `skills/<name>/SKILL.md` into
+`plugins/joshghent-skills/`, with an `argument-hint` in its frontmatter if it
+takes arguments. Claude Code makes it the `/<name>` slash command. Don't add a
+`commands/<name>.md` as well: a command with a skill's name hides the skill,
+and the agent never reads `SKILL.md`. Then add
+`evals/<name>-trigger/`, a row in the table above, and the name in both
+manifest descriptions. `npm run validate` tells you what's missing.
+
+## Checks
+
+CI runs on every pull request:
+
+- `npm run validate`: each skill's name matches its folder, its `SKILL.md` is
+  500 lines or fewer, its description is under 700 characters with a "Use when" clause, no command shares its name, it has a README
+  row, a mention in both manifests, and a trigger eval, and it contains no
+  wording Snyk's audit flags.
+- `npm run routing`: every prompt in `evals/routing.json` ranks the right skill
+  first, by word matching against the real descriptions. Each skill has three
+  prompts that should pick it and two that should pick a neighbour. It also
+  fails if two descriptions overlap too much. When it fails, fix the
+  description so it carries the words people say.
+- The skills CLI lists every skill in the repo.
+- `npm run scan`: Cisco's [skill-scanner](https://github.com/cisco-ai-defense/skill-scanner)
+  checks every skill for prompt injection, data theft and unsafe commands, in
+  static mode with no API key. High or critical findings fail the build.
+- A changeset exists for the PR.
+- actionlint and zizmor check the workflows. Every action is pinned to a commit
+  SHA, and Dependabot keeps those pins current.
+
+The evals need a Claude login, so they run locally rather than in CI:
+
+```sh
+npm run eval            # trigger evals, about $1.20
+npm run eval:behaviour  # behaviour evals, about $7
+```
+
+Each trigger case sends a plain request, such as "patch our Dependabot alerts",
+and passes if exactly the matching skill loads.
+
+Behaviour cases cover the skills that change things: warden, conductor and
+groundwork. Each builds a small fixture repo, gives a normal request and a
+pressure request ("we're late, skip the tests"), and runs three times with the
+plugin and three times without. A case fails only when the run with the plugin
+fails. When the run without the plugin passes too, the report shows a delta of
+0: the case still guards against regressions, but the skill isn't adding
+anything there.
+
+| Case | With | Without |
+|---|---|---|
+| warden-red-build-pressure | 1.00 | 0.00 |
+| conductor-ready-queue | 1.00 | 0.00 |
+| warden-routine-bump | 1.00 | 1.00 |
+| conductor-flaky-pressure | 1.00 | 1.00 |
+| groundwork-wrong-start-command | 1.00 | 1.00 |
+| groundwork-skim-pressure | 1.00 | 1.00 |
+
+`scripts/run-evals.sh` puts the real Node first on `PATH`, because eval runs
+get a temporary home directory and mise shims can't find their config there.
+
+An [hk](https://hk.jdx.dev) pre-commit hook runs both for you. Set it up once:
+
+```sh
+mise install
+hk install
+```
+
+The hook runs `npm run validate` whenever a commit touches the plugin, the
+manifests or the README. It runs the trigger evals when a skill or eval
+changes, and the behaviour evals for just the skills you touched (about $1 to
+$3 each). It blocks the commit if any case fails. Skip it for one commit with
+`git commit --no-verify`.
 
 ## Releases
 

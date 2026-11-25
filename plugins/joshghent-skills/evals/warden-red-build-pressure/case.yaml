@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: warden-red-build-pressure
+tags: [behaviour, warden]
+context:
+  scaffold_script: fixture.sh
